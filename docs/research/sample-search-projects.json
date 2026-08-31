@@ -1,0 +1,1859 @@
+{
+ "status": "success",
+ "data": {
+  "current_page": 1,
+  "data": [
+   {
+    "id": 322128,
+    "user_id": 1520160,
+    "title": "طراحی لوگوی مینیمال، طراحی لوگو",
+    "description": "نیاز به انجام پروژه طراحی لوگوی مینیمال، طراحی لوگو مشابه نمونه کار زیر دارم \nklnc.ir/l/xmw0oz3q",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 500000,
+    "max_budget": 2000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 2,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T20:10:25.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۲ دقیقه  پیش",
+    "url": "طراحی-لوگوی-مینیمال-طراحی-لوگو-906n544mw8ew",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "طراحی لوگو",
+      "id": 14
+     },
+     {
+      "name": "طراحی کاور",
+      "id": 1608
+     },
+     {
+      "name": "طراحی گرافیک",
+      "id": 1310
+     },
+     {
+      "name": "فتوشاپ (photoshop)",
+      "id": 2048
+     },
+     {
+      "name": "ایلوستریتور",
+      "id": 50187
+     },
+     {
+      "name": "coreldraw",
+      "id": 11511
+     },
+     {
+      "name": "کورل دراو",
+      "id": 1235
+     },
+     {
+      "name": "illustrator",
+      "id": 8775
+     },
+     {
+      "name": "طراحی لوگوتایپ",
+      "id": 6958
+     },
+     {
+      "name": "کورل",
+      "id": 24072
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/q5nwvk6q",
+    "token": 2,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322126,
+    "user_id": 1518625,
+    "title": "طراحی سایت فروشگاهی یدک 144",
+    "description": "نیاز به انجام پروژه طراحی سایت فروشگاهی یدک 144 مشابه نمونه کار زیر دارم \nklnc.ir/l/je11o84q",
+    "status": "pending",
+    "job_duration": 30,
+    "min_budget": 7000000,
+    "max_budget": 15000000,
+    "files": [
+     {
+      "name": "1.png",
+      "url": "https://www.karlancer.com/api/file/1699194552-KcZC.png"
+     },
+     {
+      "name": "2.png",
+      "url": "https://www.karlancer.com/api/file/1699194553-0PQb.png"
+     }
+    ],
+    "country": "هرمزگان",
+    "category_id": 6,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T20:09:48.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۳ دقیقه  پیش",
+    "url": "طراحی-سایت-فروشگاهی-یدک-144-376r5ee7r894",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "طراحی سایت",
+      "id": 1239
+     },
+     {
+      "name": "طراحی سایت فروشگاهی",
+      "id": 5224
+     },
+     {
+      "name": "طراحی قالب سایت",
+      "id": 1682
+     },
+     {
+      "name": "وردپرس",
+      "id": 2915
+     },
+     {
+      "name": "ووکامرس",
+      "id": 1460
+     },
+     {
+      "name": "افزونه ووکامرس",
+      "id": 31873
+     },
+     {
+      "name": " المنتور",
+      "id": 6483
+     },
+     {
+      "name": "elementor",
+      "id": 9248
+     },
+     {
+      "name": "برنامه نویسی",
+      "id": 1282
+     },
+     {
+      "name": "برنامه نویسی وب",
+      "id": 2274
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/j32nkgzq",
+    "token": 5,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322124,
+    "user_id": 1519966,
+    "title": "استخدام Account Manager برای کارگزاری",
+    "description": "برای همکاری با بروکر به دنبال یک Account Manager حرفه‌ای، مسئولیت‌پذیر و مسلط به حوزه فارکس هستیم.\n\nفرد موردنظر ترجیحاً سابقه فعالیت در بروکرهای فارکس یا مجموعه‌های مالی را داشته باشد و با مفاهیم بازار فارکس، MetaTrader، انواع حساب‌های معاملاتی و فرآیندهای مرتبط با مشتریان آشنا باشد.\n\nشرح وظایف:\n• ارتباط و پیگیری حرفه‌ای مشتریان\n• راهنمایی کاربران در خصوص حساب معاملاتی و خدمات بروکر\n• پیگیری درخواست‌ها و مشکلات مشتریان تا زمان حل کامل\n• ارتباط مؤثر و مستمر با مشتریان و ارائه تجربه کاربری حرفه‌ای\n• هماهنگی با تیم‌های Support، Finance و سایر دپارتمان‌های مرتبط\n\nشرایط موردنظر:\n• آشنایی خوب با بازار Forex و اصطلاحات معاملاتی\n• سابقه Account Management، Customer Support یا Sales در بروکر مزیت مهم محسوب می‌شود\n• روابط عمومی و فن بیان قوی\n• مسئولیت‌پذیر، پیگیر و منظم\n• توانایی کار با Telegram، WhatsApp و سیستم‌های CRM\n• آشنایی با زبان انگلیسی در حد کاری مزیت محسوب می‌شود",
+    "status": "pending",
+    "job_duration": 14,
+    "min_budget": 40000000,
+    "max_budget": 50000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 12,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T20:05:55.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۷ دقیقه  پیش",
+    "url": "استخدام-account-manager-برای-کارگزاری-74852nn35623",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "تریدر فارکس",
+      "id": 46020
+     },
+     {
+      "name": "فارکس",
+      "id": 2088
+     },
+     {
+      "name": "forex",
+      "id": 14108
+     },
+     {
+      "name": "معامله گر بازارهای مالی",
+      "id": 33411
+     },
+     {
+      "name": "ربات معامله گر",
+      "id": 23501
+     },
+     {
+      "name": "طراحی استراتژی معاملاتی",
+      "id": 44133
+     },
+     {
+      "name": "استراتژی معاملاتی",
+      "id": 26573
+     },
+     {
+      "name": "مدیریت ارتباط با مشتری (crm)",
+      "id": 10669
+     },
+     {
+      "name": "crm",
+      "id": 9405
+     },
+     {
+      "name": "برنامه نویسی",
+      "id": 1282
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/qvw687dj",
+    "token": 7,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322123,
+    "user_id": 1520124,
+    "title": "ویرایش عکس گروهی: جایگزینی سه نفر با عکس بهتر",
+    "description": "یک عکس دسته جمعی دارم، می خوام سه نفر عکسشون با عکس بهتری جایگزین بشه",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 1500000,
+    "max_budget": 3500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 2,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:46:49.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۲۶ دقیقه  پیش",
+    "url": "ویرایش-عکس-گروهی-جایگزینی-سه-نفر-عکس-بهتر-1n694ww0o82o",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "طراحی گرافیک",
+      "id": 1310
+     },
+     {
+      "name": "فتوشاپ (photoshop)",
+      "id": 2048
+     },
+     {
+      "name": "ادیت عکس",
+      "id": 1290
+     },
+     {
+      "name": "ادیت و روتوش عکس",
+      "id": 25207
+     },
+     {
+      "name": "ویرایش عکس",
+      "id": 7839
+     },
+     {
+      "name": "روتوش عکس و تصویر",
+      "id": 29953
+     },
+     {
+      "name": "کیفیت بالاى عکس",
+      "id": 22604
+     },
+     {
+      "name": "اینشات",
+      "id": 10338
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/xmkoy74q",
+    "token": 3,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322121,
+    "user_id": 1520112,
+    "title": "استخدام فوری ادمین اینستاگرام و تلگرام",
+    "description": "📌 شـ ـغل ادمـ ـین تلگرام و اینستاگرام \nساعت کاری : 2-3 ساعت در روز\nحقـ ـوق روزانه : حدود 1 الی 1/5 میـ ـلیـ ـون تومـ ـن\nدارای آموزش و مجوز قانونی \n نیاز به سابقه کار نیست .\n\n\n‎💢ظرفیت محدود💢",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 300000,
+    "max_budget": 1500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 10,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:45:38.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۲۷ دقیقه  پیش",
+    "url": "استخدام-فوری-ادمین-اینستاگرام-تلگرام-2w6o5oo076ne",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "ادمین",
+      "id": 2182
+     },
+     {
+      "name": "ادمین اینستاگرام",
+      "id": 1327
+     },
+     {
+      "name": "ادمین تلگرام",
+      "id": 1876
+     },
+     {
+      "name": "ادمین شبکه های مجازی",
+      "id": 2321
+     },
+     {
+      "name": "ادمین شبکه های اجتماعی",
+      "id": 50229
+     },
+     {
+      "name": "مدیریت شبکه  های اجتماعی",
+      "id": 1430
+     },
+     {
+      "name": "ادمین یوتیوب",
+      "id": 50235
+     },
+     {
+      "name": "پاسخگویی به دایرکت",
+      "id": 29007
+     },
+     {
+      "name": "پشتیبانی و پاسخگوی مشتریان",
+      "id": 1930
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/q19lv6mx",
+    "token": 2,
+    "successful_projects_percentage": 0,
+    "low_hire": true
+   },
+   {
+    "id": 322120,
+    "user_id": 1359401,
+    "title": "تکمیل بک‌اند اپلیکیشن استریم ویدیو",
+    "description": "سلام آپ استریم ویدیو دارم و نیاز به یک اند کار برای تکمیل پروژه و مشاوره دربارش دارم\nفرانت تکمیله",
+    "status": "pending",
+    "job_duration": 2,
+    "min_budget": 1500000,
+    "max_budget": 3500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 6,
+    "rate": 5,
+    "rate_num": 1,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:44:42.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۲۸ دقیقه  پیش",
+    "url": "تکمیل-بکاند-اپلیکیشن-استریم-ویدیو-2564errwe8n0",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "برنامه نویسی",
+      "id": 1282
+     },
+     {
+      "name": "بک اند",
+      "id": 1803
+     },
+     {
+      "name": "برنامه نویس بک اند",
+      "id": 12339
+     },
+     {
+      "name": "برنامه نویسی وب",
+      "id": 2274
+     },
+     {
+      "name": "طراحی وب و اپلیکیشن",
+      "id": 1800
+     },
+     {
+      "name": "طراحی اپلیکیشن موبایل",
+      "id": 2148
+     },
+     {
+      "name": "ساخت اپلیکیشن",
+      "id": 2164
+     },
+     {
+      "name": "اندروید",
+      "id": 3363
+     },
+     {
+      "name": "android",
+      "id": 8649
+     },
+     {
+      "name": "ios",
+      "id": 8648
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/xnkgw75x",
+    "token": 4,
+    "successful_projects_percentage": 0,
+    "low_hire": true
+   },
+   {
+    "id": 322118,
+    "user_id": 1518625,
+    "title": "طراحی لوگوی مینیمال، طراحی لوگو",
+    "description": "نیاز به انجام پروژه طراحی لوگوی مینیمال، طراحی لوگو مشابه نمونه کار زیر دارم \nklnc.ir/l/xmw0oz3q",
+    "status": "pending",
+    "job_duration": 30,
+    "min_budget": 1500000,
+    "max_budget": 3500000,
+    "files": [],
+    "country": "هرمزگان",
+    "category_id": 2,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:43:34.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۲۹ دقیقه  پیش",
+    "url": "طراحی-لوگوی-مینیمال-طراحی-لوگو-r78wr993361w",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "طراحی گرافیک",
+      "id": 1310
+     },
+     {
+      "name": "فتوشاپ (photoshop)",
+      "id": 2048
+     },
+     {
+      "name": "طراحی لوگو",
+      "id": 14
+     },
+     {
+      "name": "ایلوستریتور",
+      "id": 50187
+     },
+     {
+      "name": "coreldraw",
+      "id": 11511
+     },
+     {
+      "name": "کورل دراو",
+      "id": 1235
+     },
+     {
+      "name": "illustrator",
+      "id": 8775
+     },
+     {
+      "name": "طراحی لوگوتایپ",
+      "id": 6958
+     },
+     {
+      "name": "کورل",
+      "id": 24072
+     },
+     {
+      "name": "corel",
+      "id": 8774
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/qw25o70q",
+    "token": 3,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322117,
+    "user_id": 1520097,
+    "title": "طراحی سایت وردپرس برای محصولات متعدد",
+    "description": "نیاز به نیروی متخصص وردپرس کار برای طراحی سایت در محصولات مختلف و تعداد بالا\nفقط متخصص وردپرس",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 20000000,
+    "max_budget": 30000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 6,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:41:30.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۳۱ دقیقه  پیش",
+    "url": "طراحی-سایت-وردپرس-برای-محصولات-متعدد-m080roono84r",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "طراحی سایت",
+      "id": 1239
+     },
+     {
+      "name": "وردپرس",
+      "id": 2915
+     },
+     {
+      "name": "برنامه نویسی",
+      "id": 1282
+     },
+     {
+      "name": "ووکامرس",
+      "id": 1460
+     },
+     {
+      "name": "طراحی سایت فروشگاهی",
+      "id": 5224
+     },
+     {
+      "name": "طراحی قالب سایت",
+      "id": 1682
+     },
+     {
+      "name": "افزونه ووکامرس",
+      "id": 31873
+     },
+     {
+      "name": " المنتور",
+      "id": 6483
+     },
+     {
+      "name": "elementor",
+      "id": 9248
+     },
+     {
+      "name": "برنامه نویسی وب",
+      "id": 2274
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/xr0l170x",
+    "token": 6,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322116,
+    "user_id": 1435251,
+    "title": "طراحی یک کلبه چوبی 60 متری",
+    "description": "ی کلبه چوبی 60 متری کوچیک مد نظرم هست با ی اتاق زیرشیرونی میخوام طراحی بشه برام و اسکلت چوبیش رو هم طراحی کنین میخوام روش تاییده بگیرم و اجراش کنم",
+    "status": "pending",
+    "job_duration": 3,
+    "min_budget": 2000000,
+    "max_budget": 4000000,
+    "files": [
+     {
+      "name": "b2382fa3-93e2-4c68-a439-d32b535fca56.png",
+      "url": "https://www.karlancer.com/api/file/2636/1788191792-duYE.png"
+     },
+     {
+      "name": "df3f55f9-9a22-4eef-97b9-006fd69dfc3b.png",
+      "url": "https://www.karlancer.com/api/file/2636/1788191794-e6ru.png"
+     }
+    ],
+    "country": "تهران",
+    "category_id": 2,
+    "rate": 5,
+    "rate_num": 3,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:36:52.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۳۶ دقیقه  پیش",
+    "url": "طراحی-یک-کلبه-چوبی-60-متری-w187w77eo80r",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "طراحی پلان",
+      "id": 2278
+     },
+     {
+      "name": "طراحی سه بعدی",
+      "id": 3169
+     },
+     {
+      "name": "طراحی سازه",
+      "id": 1861
+     },
+     {
+      "name": "طراحی گرافیک",
+      "id": 1310
+     },
+     {
+      "name": "معماری",
+      "id": 1728
+     },
+     {
+      "name": "نرم افزارهای معماری",
+      "id": 1585
+     },
+     {
+      "name": "اتوکد",
+      "id": 1257
+     },
+     {
+      "name": "auto cad",
+      "id": 9226
+     },
+     {
+      "name": "مدلسازی سه بعدی",
+      "id": 4725
+     },
+     {
+      "name": "نقشه کشی",
+      "id": 1918
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/qz58o9eq",
+    "token": 4,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322113,
+    "user_id": 184452,
+    "title": "نیاز به وریفای اکانت بیزینسی فیسبوک و دولوپر",
+    "description": "سلام اکانت شرکتی بیزینسی فیسبوک نیاز داشتیم اگر میتوانید وریفای کنید لطفا اطلاع دهید .\nبه api های رسمی نیاز دارم برای اپ خودمون.",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 300000,
+    "max_budget": 500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 11,
+    "rate": 5,
+    "rate_num": 1,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:28:58.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۴۴ دقیقه  پیش",
+    "url": "نیاز-وریفای-اکانت-بیزینسی-فیسبوک-دولوپر-1e82r447583w",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "وریفای",
+      "id": 23195
+     },
+     {
+      "name": "ساخت اکانت های مختلف",
+      "id": 4041
+     },
+     {
+      "name": "ساخت اکانت",
+      "id": 3065
+     },
+     {
+      "name": "اکانت سازی",
+      "id": 4519
+     },
+     {
+      "name": "ساخت پروفایل و اکانت",
+      "id": 7914
+     },
+     {
+      "name": "خرید اکانت",
+      "id": 7615
+     },
+     {
+      "name": "فیسبوک",
+      "id": 20538
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/q5nwvz6q",
+    "token": 1,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322111,
+    "user_id": 1520018,
+    "title": "طراحی نرم‌افزار مدیریت فروش اقساطی با ارسال خودکار",
+    "description": "یک برنامه میخوام برای اقساطی زمانی که اقساط رو پرداخت نمیکنن و سر رسید میشه به من و به مشتری یک پیام یادآوری بفرسته و اگر مشتری اقساط رو پرداخت کرد به صورت اتوماتیک از حسابش کسر شود و پیام تشکر برای مشتری ارسال شود واگر مشتری در پرداختش تاخیر داشت نهایتا تا 4 روز بهشون مهلت بدن و بعد از روز پنجم برای یه پیام یادآوری تاخیر ارسال کنید اگر توضیحات بیشتری نیاز دارین پیام بزارین در خدمتم",
+    "status": "pending",
+    "job_duration": 15,
+    "min_budget": 7000000,
+    "max_budget": 20000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 6,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:23:30.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۴۹ دقیقه  پیش",
+    "url": "طراحی-نرمافزار-مدیریت-فروش-اقساطی-ارسال-خودکار-2m6m2rrr5850",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "برنامه نویسی",
+      "id": 1282
+     },
+     {
+      "name": "نرم افزار",
+      "id": 1341
+     },
+     {
+      "name": "برنامه نویسی وب",
+      "id": 2274
+     },
+     {
+      "name": "طراحی وب و اپلیکیشن",
+      "id": 1800
+     },
+     {
+      "name": "طراحی اپلیکیشن موبایل",
+      "id": 2148
+     },
+     {
+      "name": "ساخت اپلیکیشن",
+      "id": 2164
+     },
+     {
+      "name": "ساخت ربات",
+      "id": 3984
+     },
+     {
+      "name": "ربات",
+      "id": 3147
+     },
+     {
+      "name": "طراحی ربات",
+      "id": 9580
+     },
+     {
+      "name": "کدنویسی",
+      "id": 3850
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/x92po0ej",
+    "token": 6,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322110,
+    "user_id": 1518663,
+    "title": "ادمین اینستاگرام و شبکه های اجتماعی",
+    "description": "به دنبال استخدام ادمین پاسخ‌گویی هستم\nبه سابقه کاری و تجربه نیاز نداریم\n و اموزش های لازم در طول یک روز داده میشه، \nحقوق روزانه تصویه میشه واز ۸۰۰ تا ۱ میلیون می باشد",
+    "status": "pending",
+    "job_duration": 30,
+    "min_budget": 500000,
+    "max_budget": 2500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 10,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:59:44.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "ادمین-اینستاگرام-شبکه-های-اجتماعی-74852nnn5623",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "ادمین",
+      "id": 2182
+     },
+     {
+      "name": "ادمین شبکه های مجازی",
+      "id": 2321
+     },
+     {
+      "name": "ادمین شبکه های اجتماعی",
+      "id": 50229
+     },
+     {
+      "name": "مدیریت شبکه  های اجتماعی",
+      "id": 1430
+     },
+     {
+      "name": "ادمین اینستاگرام",
+      "id": 1327
+     },
+     {
+      "name": "ادمین تلگرام",
+      "id": 1876
+     },
+     {
+      "name": "ادمین یوتیوب",
+      "id": 50235
+     },
+     {
+      "name": "پشتیبانی و پاسخگوی مشتریان",
+      "id": 1930
+     },
+     {
+      "name": "پاسخگویی به دایرکت",
+      "id": 29007
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/xok80v1j",
+    "token": 2,
+    "successful_projects_percentage": 0,
+    "low_hire": true
+   },
+   {
+    "id": 322109,
+    "user_id": 290912,
+    "title": "برنامه زمانبندی پروژه ساختمانی در مایکروسافت پروجکت",
+    "description": "برنامه زمانبندی سطح ۲ پروژه ساختمانی ۹ طبقه شامل دو طبقه زیرزمین و یک طبقه همکف و شش طبقه مسکونی از محله تخریب تا انتها",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 500000,
+    "max_budget": 2000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 12,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:58:11.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "برنامه-زمانبندی-پروژه-ساختمانی-مایکروسافت-پروجکت-1n694wwwo82o",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "کنترل پروژه",
+      "id": 2001
+     },
+     {
+      "name": "پریماورا",
+      "id": 10933
+     },
+     {
+      "name": "primavera",
+      "id": 23594
+     },
+     {
+      "name": "مایکروسافت آفیس",
+      "id": 1708
+     },
+     {
+      "name": "مایکروسافت پروجکت (MSP)",
+      "id": 2486
+     },
+     {
+      "name": "اموزش دوره های مایکروسافت",
+      "id": 1806
+     },
+     {
+      "name": "microsoft project",
+      "id": 12099
+     },
+     {
+      "name": "microservice",
+      "id": 12097
+     }
+    ],
+    "determined_budget": true,
+    "shortened_url": "klnc.ir/l/q40mvdvx",
+    "token": 2,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 320585,
+    "user_id": 1288622,
+    "title": "استخدام ادمین پاسخگویی/telegram/Instagram",
+    "description": "دعـ ـوت به همکـ ـاری 🔆\n\n✅استخـ ـدام ادمین پاسخگویی\n✅با حقوق روزانه 800 هزار الی 2 میلیون\n✅کار با گوشی موبایل بصورت غیرحضوری\n✅مناسب جهت دانشجویان٫ دانش آموزان، افراد خانه دار و شغل دوم\n✅بدون محدودیت سنی و تحصیلی",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 3000000,
+    "max_budget": 7000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 10,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": true,
+    "is_urgent": true,
+    "is_fulltime": true,
+    "is_onsite": false,
+    "is_pin": true,
+    "is_multi": true,
+    "is_ladder": true,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:42:15.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۳۰ دقیقه  پیش",
+    "url": "استخدام-ادمین-پاسخگوییtelegraminstagram-206e7427o675",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "ادمین اینستاگرام",
+      "id": 1327
+     },
+     {
+      "name": "ادمین تلگرام",
+      "id": 1876
+     },
+     {
+      "name": "ادمین شبکه های مجازی",
+      "id": 2321
+     },
+     {
+      "name": "ادمین سایت",
+      "id": 1408
+     },
+     {
+      "name": "پاسخگویی انلاین",
+      "id": 4601
+     },
+     {
+      "name": "ادمین شبکه های اجتماعی",
+      "id": 50229
+     },
+     {
+      "name": "مدیریت شبکه  های اجتماعی",
+      "id": 1430
+     },
+     {
+      "name": "ادمین یوتیوب",
+      "id": 50235
+     },
+     {
+      "name": "پاسخگویی به دایرکت",
+      "id": 29007
+     },
+     {
+      "name": "پشتیبانی و پاسخگوی مشتریان",
+      "id": 1930
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/jy6mrz1q",
+    "token": 4,
+    "successful_projects_percentage": 0,
+    "low_hire": true
+   },
+   {
+    "id": 322107,
+    "user_id": 1498037,
+    "title": "طراحی نقشه چیدمان (Layout) کارخانه تولیدی",
+    "description": "یک نقشه صنعتی lauout کارخانه تولید شمش از روی شماتیکی ک اپلود کردم میخوام کاملا دقیق باشه",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 500000,
+    "max_budget": 1500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 2,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:41:33.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "طراحی-نقشه-چیدمان-layout-کارخانه-تولیدی-2w6o5ooo76ne",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "نقشه کشی صنعتی",
+      "id": 1868
+     },
+     {
+      "name": "طراحی گرافیک",
+      "id": 1310
+     },
+     {
+      "name": "معماری",
+      "id": 1728
+     },
+     {
+      "name": "نرم افزارهای معماری",
+      "id": 1585
+     },
+     {
+      "name": "اتوکد",
+      "id": 1257
+     },
+     {
+      "name": "auto cad",
+      "id": 9226
+     },
+     {
+      "name": "نقشه کشی",
+      "id": 1918
+     },
+     {
+      "name": "طراحی پلان",
+      "id": 2278
+     },
+     {
+      "name": "پلان فاز۱",
+      "id": 30338
+     },
+     {
+      "name": "پلان فاز۲",
+      "id": 30342
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/qw25oy0q",
+    "token": 3,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322105,
+    "user_id": 1519984,
+    "title": "تدوین ۱۰ ریلز اینستاگرام با کیفیت حرفه‌ای",
+    "description": "📌 نوع پروژه : فریلسنری / دورکاری \n🎥 شرح کار : تدوین ۱۰ عدد ویدیو کوتاه ریلز اینستاگرام . راش ها با کیفیت عالی گرفته شده و سناریو و هوک و همه چیز مشخص شده است . نیاز به کات زدن و زیرنویس و افکت صدا و تدیون داریم.\n💰 بودجه : 500,000 هزار تا 1,500,000 تومان (بسته به کیفیت کار فریلنسر )\n🤝🏻 مزیت : امکان همکاری دائم و طولانی مدت در پروژه های بعدی تیم ما.\n📩 شرایط ارسال رزومه : لطفا نمونه کارهای مرتبط با ریلز اینستاگرام خود را ارسال کنید.",
+    "status": "pending",
+    "job_duration": 5,
+    "min_budget": 500000,
+    "max_budget": 1500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 7,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:39:32.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "تدوین-۱۰-ریلز-اینستاگرام-کیفیت-حرفهای-w963n44478n3",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "تدوین",
+      "id": 8629
+     },
+     {
+      "name": "ادیت ویدئو",
+      "id": 1263
+     },
+     {
+      "name": "ادیتور ویدیو",
+      "id": 20220
+     },
+     {
+      "name": "ادیت کلیپ",
+      "id": 5548
+     },
+     {
+      "name": "ادیت ویدیو",
+      "id": 20504
+     },
+     {
+      "name": "ادیتور یوتیوب",
+      "id": 20145
+     },
+     {
+      "name": "تدوین فیلم",
+      "id": 50712
+     },
+     {
+      "name": "ادوبی پریمیر",
+      "id": 1785
+     },
+     {
+      "name": "ادوبی افتر افکت",
+      "id": 1635
+     },
+     {
+      "name": "adobe premiere",
+      "id": 9103
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/je0185px",
+    "token": 2,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322104,
+    "user_id": 1263740,
+    "title": "تدوینگر حرفه ای عروسی - professional wedding video editor",
+    "description": "یک ادیتور حرفه ای کلیپ عروسی میخوام . فول تایم . حجم کار بالاست . یکیو میخوام که این کار رو حرفه ای بلد باشه و دستش خیلی تند باشه",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 2000000,
+    "max_budget": 4000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 7,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": true,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": true,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T19:37:43.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۳۵ دقیقه  پیش",
+    "url": "تدوینگر-حرفه-ای-عروسی-professional-wedding-video-editor-r78wr999361w",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "adobe premiere",
+      "id": 9103
+     },
+     {
+      "name": "capcut",
+      "id": 50771
+     },
+     {
+      "name": "ادیت ویدئو",
+      "id": 1263
+     },
+     {
+      "name": "ادیتور ویدیو",
+      "id": 20220
+     },
+     {
+      "name": "ادیت کلیپ",
+      "id": 5548
+     },
+     {
+      "name": "ادیت ویدیو",
+      "id": 20504
+     },
+     {
+      "name": "ادوبی پریمیر",
+      "id": 1785
+     },
+     {
+      "name": "ادوبی افتر افکت",
+      "id": 1635
+     },
+     {
+      "name": "تدوین",
+      "id": 8629
+     },
+     {
+      "name": "تدوین فیلم",
+      "id": 50712
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/j71o725j",
+    "token": 3,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322103,
+    "user_id": 818611,
+    "title": "طراحی 30 عدد موکاپ آموزشی",
+    "description": "تعداد حدود 30 عدد موکاپ آموزشی داریم که طبق توضیحات میخواهیم تولید شود طبق نمونه و موارد که میخواهیم قرارداده شود در موکاپ \nطراح خوش ذوق و سلیقه مدنظر می باشد جهت همکاری با مجموعه",
+    "status": "pending",
+    "job_duration": 5,
+    "min_budget": 1500000,
+    "max_budget": 3500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 2,
+    "rate": 5,
+    "rate_num": 1,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:36:05.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "طراحی-30-عدد-موکاپ-آموزشی-m080roooo84r",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "طراحی گرافیک",
+      "id": 1310
+     },
+     {
+      "name": "فتوشاپ (photoshop)",
+      "id": 2048
+     },
+     {
+      "name": "طراحی پوستر",
+      "id": 1525
+     },
+     {
+      "name": "طراحی موکاپ",
+      "id": 22976
+     },
+     {
+      "name": "موکاپ",
+      "id": 31956
+     },
+     {
+      "name": "طراحی موکاپ موبایل",
+      "id": 22977
+     },
+     {
+      "name": "کورل دراو",
+      "id": 1235
+     },
+     {
+      "name": "کورل",
+      "id": 24072
+     },
+     {
+      "name": "ایلوستریتور",
+      "id": 50187
+     },
+     {
+      "name": "illustrator",
+      "id": 8775
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/x92po9ej",
+    "token": 3,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322102,
+    "user_id": 1519974,
+    "title": "آموزش پایتون و هوش مصنوعی",
+    "description": "سلام من فقط وی بی ای بلدم و به خاطر شرایط جدید مجبورم کارمند های کد نویس را مدیریت کنم بنابراین میخوام کسی که بهم یاد بده یا بگه از کجا و کدام فیلم فقط مطالب مورد نیازم را یاد بگیم مطالب مانند دیباگ و سنجش کدهای پایتون را از وجود کارمزد و مغرضانه بودن به وسیله هوش مصنوعی کد نوشتن با هوش مصنوعی سر هم کردن کامپوننتها و... گیت هاب و... ارتباط با هوش مصنوعی و ,واقعیت مجازی و بلک چین را",
+    "status": "pending",
+    "job_duration": 20,
+    "min_budget": 800000,
+    "max_budget": 3000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 6,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:33:52.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "آموزش-پایتون-هوش-مصنوعی-w187w777o80r",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "برنامه نویسی",
+      "id": 1282
+     },
+     {
+      "name": "هوش مصنوعی",
+      "id": 3146
+     },
+     {
+      "name": "برنامه نویسی وب",
+      "id": 2274
+     },
+     {
+      "name": "کدنویسی",
+      "id": 3850
+     },
+     {
+      "name": "پایتون",
+      "id": 1369
+     },
+     {
+      "name": "python",
+      "id": 9923
+     },
+     {
+      "name": "متخصص هوش مصنوعی",
+      "id": 35899
+     },
+     {
+      "name": "آموزش پایتون",
+      "id": 50165
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/qvw68vdj",
+    "token": 3,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322100,
+    "user_id": 1507392,
+    "title": "تدوین ویدئو ترجیحا با موبایل",
+    "description": "سلام و درود خدمت تدوین گران محترم\nبنده مدتی هست در حوزه تدوین ویدئو با موبایل (Cap Cut) فعالیت میکنم و برای پیج کاری نیازی به نمونه کارهای بیشتری دارم.\n\nعلاوه بر نمونه کار های آماده ، ویدیو های خام مناسب ادیت که بدون چهره شخص باشه (ترجیحا کابینت، منزل،دکوراسیون داخلی و.. ) خودتون تجربه ادیتش رو داشتین هم نیاز دارم.\n\nتوجه بفرمایید که کانال ها و سایت های مختلفی برای استفاده از نمونه کار ها و ویدیو های خام دارم ولی هدفم استفاده به صورت قانونی و با کسب رضایت و اجازه از صاحب اثر هست، پس از ارسال پیشنهاد برای مواردی که متعلق به شخص خودتون نیست لطفا خودداری فرمایید.\n\nممنون از وقتی که اختصاص دادین.",
+    "status": "pending",
+    "job_duration": 2,
+    "min_budget": 300000,
+    "max_budget": 1500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 7,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:31:44.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "تدوین-ویدئو-ترجیحا-موبایل-906n5444w8ew",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "تدوین",
+      "id": 8629
+     },
+     {
+      "name": "تدوین فیلم",
+      "id": 50712
+     },
+     {
+      "name": "ادیت ویدئو",
+      "id": 1263
+     },
+     {
+      "name": "ادیتور ویدیو",
+      "id": 20220
+     },
+     {
+      "name": "ادیت کلیپ",
+      "id": 5548
+     },
+     {
+      "name": "ادیت ویدیو",
+      "id": 20504
+     },
+     {
+      "name": "ادیتور یوتیوب",
+      "id": 20145
+     },
+     {
+      "name": "ادوبی پریمیر",
+      "id": 1785
+     },
+     {
+      "name": "ادوبی افتر افکت",
+      "id": 1635
+     },
+     {
+      "name": "capcut",
+      "id": 50771
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/jgl43dvq",
+    "token": 2,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322098,
+    "user_id": 1506649,
+    "title": "حذف اعداد از بک گراند عکس با فتوشاپ (ویرایش تمیز و طبیعی)",
+    "description": "فتوشاپ اعداد بک عکس فقط میخوام تمیز باشد ممنون از شما",
+    "status": "pending",
+    "job_duration": 1,
+    "min_budget": 300000,
+    "max_budget": 1500000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 2,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:26:05.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "حذف-اعداد-بک-گراند-عکس-فتوشاپ-ویرایش-تمیز-906n544498ew",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "طراحی گرافیک",
+      "id": 1310
+     },
+     {
+      "name": "فتوشاپ (photoshop)",
+      "id": 2048
+     },
+     {
+      "name": "ادیت عکس",
+      "id": 1290
+     },
+     {
+      "name": "ادیت و روتوش عکس",
+      "id": 25207
+     },
+     {
+      "name": "ویرایش عکس",
+      "id": 7839
+     },
+     {
+      "name": "روتوش عکس و تصویر",
+      "id": 29953
+     },
+     {
+      "name": "کیفیت بالاى عکس",
+      "id": 22604
+     },
+     {
+      "name": "اینشات",
+      "id": 10338
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/q40mvpvx",
+    "token": 3,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322097,
+    "user_id": 597148,
+    "title": "ویزیتور جهت معرفی سامانه به تأمین‌کنندگان",
+    "description": "ویزیتور جهت معرفی سامانه به تأمین‌کنندگان\n\nبرای توسعه شبکه تأمین‌کنندگان یک سامانه تخصصی صنعتی، به تعدادی **ویزیتور حضوری** جهت مراجعه به فروشگاه‌ها، شرکت‌ها و تأمین‌کنندگان نیازمندیم.\n\n**ماهیت کار فروش یا بازاریابی نیست.**\n\nوظیفه ویزیتور صرفاً مراجعه به تأمین‌کننده، معرفی کوتاه سامانه و ثبت‌نام مجموعه در سیستم است.\n\nاستفاده از سامانه برای تأمین‌کننده **کاملاً رایگان** بوده و نصب، راه‌اندازی و آموزش اولیه نیز بدون هزینه انجام می‌شود.\n\nشرح فعالیت:\n\n* مراجعه حضوری به تأمین‌کنندگان و فروشندگان\n* معرفی کوتاه امکانات سامانه\n* کمک به ثبت‌نام و راه‌اندازی اولیه\n* آموزش ساده نحوه استفاده از سامانه\n\nنحوه همکاری:\n\nبه ازای هر تأمین‌کننده‌ای که توسط شما معرفی و با موفقیت وارد سامانه شود، **مبلغ مشخصی به‌عنوان حق‌الزحمه پرداخت خواهد شد.**\n\nبنابراین درآمد شما مستقیماً به تعداد مجموعه‌هایی که معرفی می‌کنید بستگی دارد و محدودیتی در تعداد معرفی وجود ندارد.\n\nاین همکاری برای افرادی که با بازار، فروشگاه‌های صنعتی، تأمین‌کنندگان، عمده‌فروشان و شرکت‌های بازرگانی آشنایی دارند بسیار مناسب است.\n\n**نیازی به فروش محصول، دریافت وجه از مشتری یا بازاریابی برای خرید اشتراک وجود ندارد؛ عضویت و استفاده از سامانه برای تأمین‌کننده رایگان است.**\n\nترجیح همکاری با عزیزانیست که در محدوده میدان انقلاب تا میدان امام خمینی سکونت دارند",
+    "status": "pending",
+    "job_duration": 30,
+    "min_budget": 10000000,
+    "max_budget": 18000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 8,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:24:27.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۱ ساعت  پیش",
+    "url": "ویزیتور-جهت-معرفی-سامانه-تمینکنندگان-1e82r44m983w",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "ویزیتور",
+      "id": 14514
+     },
+     {
+      "name": "بازاریابی",
+      "id": 1395
+     },
+     {
+      "name": "بازاریابی دیجیتال",
+      "id": 1326
+     },
+     {
+      "name": "بازاریابی اینترنتی",
+      "id": 1848
+     },
+     {
+      "name": "برنامه بازاریابی",
+      "id": 26632
+     },
+     {
+      "name": "بازاریابی تلفنی",
+      "id": 50731
+     },
+     {
+      "name": "استراتژی بازاریابی",
+      "id": 50717
+     },
+     {
+      "name": "فروش",
+      "id": 1397
+     },
+     {
+      "name": "افزایش فروش",
+      "id": 19628
+     },
+     {
+      "name": "مارکتینگ",
+      "id": 7192
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/jp0gnp6q",
+    "token": 5,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322095,
+    "user_id": 1503289,
+    "title": "مبدل دما از نمودار ولتاژ",
+    "description": "می خواهم دو تا سیگنال ولتاژ که یکی دندان اره ای 0 تا 10 ولت(V1) است و دیگری 0 تا 5 ولت(V2) است به یک برد الکترونیکی (نمی دانم چی مناسبه؟) بدهم و سپس رابطه ای را برای ولتاژ ها (مثلا لگاریتم V2 تقسیم بر V1 به توان 0/5) بر حسب ولتاژ V1 روی نمودار رسم کنم و سپس معکوس شیب هموننمودار رو محاسبه کنم.",
+    "status": "pending",
+    "job_duration": 10,
+    "min_budget": 2000000,
+    "max_budget": 5000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 6,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": true,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:02:45.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۲ ساعت  پیش",
+    "url": "مبدل-دما-نمودار-ولتاژ-2m6m2rr0w850",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "آردوینو",
+      "id": 21
+     },
+     {
+      "name": "َarduino",
+      "id": 9739
+     },
+     {
+      "name": "برنامه نویسی arduino",
+      "id": 11610
+     },
+     {
+      "name": "میکروکنترلر arduino",
+      "id": 8319
+     },
+     {
+      "name": "میکروکنترلر ",
+      "id": 4339
+     },
+     {
+      "name": "میکروکنترلر AVR",
+      "id": 18
+     },
+     {
+      "name": "میکروکنترلر STM32",
+      "id": 17
+     },
+     {
+      "name": "میکروکنترلر arm",
+      "id": 15020
+     },
+     {
+      "name": "برنامه نویسی",
+      "id": 1282
+     }
+    ],
+    "determined_budget": false,
+    "shortened_url": "klnc.ir/l/xk1oze8j",
+    "token": 3,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   },
+   {
+    "id": 322094,
+    "user_id": 1519894,
+    "title": "طراحی فروشگاه آنلاین گوشت و پروتئین",
+    "description": "یک سایت ورد پرسی با نما و گرافیک بسیار زیبا \nنسخه موبایل بسیار عالی کار شود \nامکان فروش نقدی ، قسطی ( تارا ، دیجی پی و ... ) ، کالابرگ ، بازنشستگان سازمان های مختلف ، \nوبلاگ متصل به محصولات ( یعنی اگر مشتری مثلا راسته گوسفندی را انتخاب می کند نحوه پخت ، نحوه نگهداری ، غذاهای مر تبط و ... به اون کلا به مشتری پیشنهاد شود ) \nاتصال به ترب ، اسنپ شاپ ، دیجی کالا ، و ... \nیک قسمت برای کمک به موسسات و امور خیریه \nو داشتن همه امکانات رایج و متداول سایت های فروشگاهی مثل باشگاه مشتریان ، ثبت آدرس مشتری روی نقشه جهت ارسال ، پیگیری سفارش ، وضعیت سفارش برای مشتری پیامک شود ،\nما در استان البرز - کرج هستیم",
+    "status": "pending",
+    "job_duration": 20,
+    "min_budget": 7000000,
+    "max_budget": 20000000,
+    "files": [],
+    "country": "تهران",
+    "category_id": 6,
+    "rate": "N/A",
+    "rate_num": 0,
+    "is_highlight": false,
+    "is_urgent": false,
+    "is_fulltime": false,
+    "is_onsite": false,
+    "is_pin": false,
+    "is_multi": false,
+    "is_ladder": false,
+    "is_expired": false,
+    "ladder_at": "2026-08-31T18:00:26.000000+03:30",
+    "is_invisible": false,
+    "past_time": "۲ ساعت  پیش",
+    "url": "طراحی-فروشگاه-آنلاین-گوشت-پروتئین-74852nnm4623",
+    "users_bid": null,
+    "skills": [
+     {
+      "name": "برنامه نویسی",
+      "id": 1282
+     },
+     {
+      "name": "طراحی سایت",
+      "id": 1239
+     },
+     {
+      "name": "طراحی سایت فروشگاهی",
+      "id": 5224
+     },
+     {
+      "name": "طراحی قالب سایت",
+      "id": 1682
+     },
+     {
+      "name": "وردپرس",
+      "id": 2915
+     },
+     {
+      "name": "ووکامرس",
+      "id": 1460
+     },
+     {
+      "name": "افزونه ووکامرس",
+      "id": 31873
+     },
+     {
+      "name": " المنتور",
+      "id": 6483
+     },
+     {
+      "name": "elementor",
+      "id": 9248
+     },
+     {
+      "name": "برنامه نویسی وب",
+      "id": 2274
+     }
+    ],
+    "determined_budget": true,
+    "shortened_url": "klnc.ir/l/q842vg7x",
+    "token": 6,
+    "successful_projects_percentage": 0,
+    "low_hire": false
+   }
+  ],
+  "first_page_url": "http://www.karlancer.com/api/publics/search/projects?page=1",
+  "from": 1,
+  "last_page": 417,
+  "last_page_url": "http://www.karlancer.com/api/publics/search/projects?page=417",
+  "links": [
+   {
+    "url": null,
+    "label": "pagination.previous",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=1",
+    "label": "1",
+    "active": true
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=2",
+    "label": "2",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=3",
+    "label": "3",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=4",
+    "label": "4",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=5",
+    "label": "5",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=6",
+    "label": "6",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=7",
+    "label": "7",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=8",
+    "label": "8",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=9",
+    "label": "9",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=10",
+    "label": "10",
+    "active": false
+   },
+   {
+    "url": null,
+    "label": "...",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=416",
+    "label": "416",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=417",
+    "label": "417",
+    "active": false
+   },
+   {
+    "url": "http://www.karlancer.com/api/publics/search/projects?page=2",
+    "label": "pagination.next",
+    "active": false
+   }
+  ],
+  "next_page_url": "http://www.karlancer.com/api/publics/search/projects?page=2",
+  "path": "http://www.karlancer.com/api/publics/search/projects",
+  "per_page": 24,
+  "prev_page_url": null,
+  "to": 24,
+  "total": 10000,
+  "order": "last-updated"
+ },
+ "error": null
+}

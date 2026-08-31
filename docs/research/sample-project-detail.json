@@ -1,0 +1,132 @@
+{
+ "status": "success",
+ "data": {
+  "id": 322126,
+  "url": "طراحی-سایت-فروشگاهی-یدک-144-376r5ee7r894",
+  "rate": "N/A",
+  "rate_num": null,
+  "country": "هرمزگان",
+  "category_id": 6,
+  "breadcrumbs": [
+   {
+    "id": "578",
+    "name": "برنامه نویسی",
+    "url": "https://www.karlancer.com/jobs/programming"
+   },
+   {
+    "id": "416",
+    "name": "پروژه های طراحی سایت",
+    "url": "https://www.karlancer.com/jobs/web-design"
+   }
+  ],
+  "title": "طراحی سایت فروشگاهی یدک 144",
+  "description": "نیاز به انجام پروژه طراحی سایت فروشگاهی یدک 144 مشابه نمونه کار زیر دارم \nklnc.ir/l/je11o84q",
+  "status": "pending",
+  "hire_deadline": "2026-10-01T20:09:48.000000+03:30",
+  "job_duration": 30,
+  "min_budget": 7000000,
+  "max_budget": 15000000,
+  "files": [
+   {
+    "id": 4150270,
+    "user_id": 1518625,
+    "mime_type": "application/octet-stream",
+    "name": "1.png",
+    "url": "https://www.karlancer.com/api/file/1699194552-KcZC.png",
+    "size": null,
+    "text_detected": null
+   },
+   {
+    "id": 4150271,
+    "user_id": 1518625,
+    "mime_type": "application/octet-stream",
+    "name": "2.png",
+    "url": "https://www.karlancer.com/api/file/1699194553-0PQb.png",
+    "size": null,
+    "text_detected": null
+   }
+  ],
+  "admin_note": null,
+  "is_highlight": false,
+  "is_urgent": false,
+  "is_fulltime": false,
+  "is_onsite": false,
+  "is_pin": false,
+  "is_multi": false,
+  "is_ladder": false,
+  "is_expired": false,
+  "is_activated": false,
+  "is_invisible": false,
+  "determined_budget": false,
+  "past_time": "۱ ساعت  پیش",
+  "users_bid": null,
+  "skills": [
+   {
+    "id": 1239,
+    "name": "طراحی سایت",
+    "display": "طراحی سایت",
+    "value": 1239
+   },
+   {
+    "id": 5224,
+    "name": "طراحی سایت فروشگاهی",
+    "display": "طراحی سایت فروشگاهی",
+    "value": 5224
+   },
+   {
+    "id": 1682,
+    "name": "طراحی قالب سایت",
+    "display": "طراحی قالب سایت",
+    "value": 1682
+   },
+   {
+    "id": 2915,
+    "name": "وردپرس",
+    "display": "وردپرس",
+    "value": 2915
+   },
+   {
+    "id": 1460,
+    "name": "ووکامرس",
+    "display": "ووکامرس",
+    "value": 1460
+   },
+   {
+    "id": 31873,
+    "name": "افزونه ووکامرس",
+    "display": "افزونه ووکامرس",
+    "value": 31873
+   },
+   {
+    "id": 6483,
+    "name": " المنتور",
+    "display": " المنتور",
+    "value": 6483
+   },
+   {
+    "id": 9248,
+    "name": "elementor",
+    "display": "elementor",
+    "value": 9248
+   },
+   {
+    "id": 1282,
+    "name": "برنامه نویسی",
+    "display": "برنامه نویسی",
+    "value": 1282
+   },
+   {
+    "id": 2274,
+    "name": "برنامه نویسی وب",
+    "display": "برنامه نویسی وب",
+    "value": 2274
+   }
+  ],
+  "created_at": "2026-08-31T16:24:15.000000Z",
+  "user_id": 1518625,
+  "shortened_url": "klnc.ir/l/j32nkgzq",
+  "token": 5,
+  "low_hire": null
+ },
+ "error": null
+}
