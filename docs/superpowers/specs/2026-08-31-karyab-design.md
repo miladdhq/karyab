@@ -88,6 +88,62 @@ nicety.
 per person is enforced. The residual risk is not the terms but the pattern: bids
 that read as machine-generated are what gets an account flagged.
 
+## The user's profile, measured
+
+Profile 65389 (`Zeinab.H`, formerly `Vayrex`), read from
+`GET /api/publics/profile/{id}` — also unauthenticated, and paginated with
+`?page=N` for its `completed_projects`, `reviews_pg`, and `worksamples`
+sub-resources. Captured to `docs/research/profile-65389.json`.
+
+Headline numbers: 4.3 rating over 28 reviews, 97% on-time, ~4h20m average
+response, 29 completed projects.
+
+Four findings change the design.
+
+**Every single completed project is category 6 (برنامه نویسی).** 29 of 29. The
+category whitelist does not need to be guessed; it is measured. Anything
+outside category 6 starts from a position of no evidence.
+
+**The declared skill list badly under-describes the actual work.** The profile
+declares seven skills — طراحی سایت, php, react js, node js, برنامه نویس فول
+استک, express.js, react native. But of the 29 wins, 11 are bots (6 of them
+Telegram bots), 2 are WireGuard panels, 2 are Python, 1 is Next.js. None of
+those words appear in the declared list.
+
+This is decisive for matching: **the skill vocabulary must be derived from won
+projects, not from the profile's declared skills.** A scorer keyed on the
+declared list would miss the single largest cluster of work this user actually
+wins. It also means the profile itself is leaving money on the table, which is
+a separate conversation.
+
+**Ratings are bimodal, not average.** The 4.3 is 23 five-star reviews and 5
+one-star reviews. There is no middle. So "4.3" understates both how well the
+good projects go and how badly the bad ones do.
+
+**Outcomes vary with project size.** Of rated projects at or below 3.5M toman,
+17 of 19 are five-star (89%). Above 3.5M, 4 of 6 (67%) — and the two worst
+outcomes are the two largest rated projects (12M and 11.1M). The sample above
+3.5M is small, so this is a signal rather than a proof.
+
+Karlancer publishes a generated summary on the profile page, visible to every
+client considering a bid, which reaches the same conclusion: strong on small
+and simple projects, high risk of incompletion on larger or time-bound ones.
+Whatever else is true, prospective clients are reading that before they read
+the proposal.
+
+**Design consequences, not judgements:**
+
+- The scorer gets a configurable **sweet-spot band**, defaulting to roughly
+  500k–3.5M toman, as a scoring bonus rather than a hard cap. The user can move
+  it or disable it. Bidding outside it stays possible and is simply scored
+  lower, because the evidence for it is weaker.
+- One of the five one-star reviews specifically objects to a bid at several
+  times the client's stated budget. That converts the price-clamping rule from
+  a nicety into a **hard invariant**: a proposal whose price exceeds
+  `max_budget` is never queued.
+- The evidence pack for the writer is built from the 29 completed projects and
+  their titles, not from the seven declared skills.
+
 ## Architecture
 
 Six components. Each is independently testable and communicates through SQLite.
@@ -147,6 +203,7 @@ Signals:
 | Budget floor | `max_budget` below configured minimum | 1 | hard reject |
 | Category | `category_id` against whitelist/blacklist | 1 | hard reject |
 | Token cost | `token` vs. expected value of the bid | 1 | penalty |
+| Sweet spot | `min_budget`/`max_budget` inside the configured band | 1 | bonus |
 | Weak client | `low_hire` true | 1 | penalty |
 | Urgency | `is_urgent`, `is_highlight` | 1 | bonus |
 | Freshness | `first_seen_at`, corroborated by `created_at` | 2 | bonus, steep |
@@ -251,6 +308,12 @@ estimate per category produce a price, clamped into the project's stated
 `min_budget`–`max_budget` range. The review queue prefills it and the user
 overrides at will.
 
+**Invariant: a draft whose price exceeds the project's `max_budget` is never
+queued.** This is enforced in code, not left to the model or to review
+discipline. It exists because the user has already taken a one-star review for
+exactly this — a bid at several times a client's stated budget — and one such
+review costs more than any single project is worth.
+
 ## Data
 
 SQLite at `~/.local/share/karyab/karyab.db`.
@@ -263,8 +326,12 @@ SQLite at `~/.local/share/karyab/karyab.db`.
 - `config` — mutable runtime settings
 
 Configuration the user edits lives in one file: skills and weights, rate per
-category, budget floor, category whitelist/blacklist, daily cap, token budget,
-score threshold.
+category, budget floor, sweet-spot band, category whitelist/blacklist, daily
+cap, token budget, score threshold.
+
+The initial skill vocabulary is **generated from the 29 completed projects**
+rather than typed by hand or copied from the profile's declared skills, then
+handed to the user to correct. Phase 1 ships this generator.
 
 ## Safety and rate limiting
 
@@ -305,8 +372,12 @@ Phase 1 is the subject of the first implementation plan.
 
 ## Open questions
 
-- The user's Karlancer profile URL, for the evidence pack and configured skills.
-  Not required for Phase 1, which can bootstrap skills from config.
 - Whether the three-part proposal rule survives contact with the harvested
   data. If the user's winning messages are consistently shorter and blunter,
   the rule bends to the evidence.
+- Whether to keep the sweet-spot band on by default. The evidence supports it,
+  but it is the user's business decision how much weight to give a six-project
+  sample, and the band is one config line either way.
+- Proposals are sent under the profile name `Zeinab.H`. The writer's voice and
+  self-reference must match that persona consistently; the harvested proposals
+  in Phase 2 settle the register.

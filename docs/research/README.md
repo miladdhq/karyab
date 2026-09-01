@@ -9,3 +9,8 @@ design. They are the evidence for the claims in
 - `sample-project-detail.json` — `GET /api/publics/projects/{slug}`
 
 Kept so the scorer can be unit-tested without touching the live site.
+
+- `profile-65389.json` — `GET /api/publics/profile/65389`, with
+  `completed_projects`, `reviews_pg` and `worksamples` paginated out via
+  `?page=N`. 29 completed projects, 28 reviews, 1 worksample. Backs the
+  measured claims in the spec's "The user's profile, measured" section.
