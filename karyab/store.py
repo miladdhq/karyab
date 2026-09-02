@@ -45,6 +45,28 @@ CREATE TABLE IF NOT EXISTS scores (
 );
 
 CREATE INDEX IF NOT EXISTS scores_by_value ON scores(value DESC);
+
+-- The user's own sent proposals, with what became of each. This is the
+-- corpus a proposal writer learns their voice from, so it is kept whole:
+-- losing pitches are as informative as winning ones.
+CREATE TABLE IF NOT EXISTS voice_samples (
+    bid_id           INTEGER PRIMARY KEY,
+    project_id       INTEGER NOT NULL DEFAULT 0,
+    text             TEXT    NOT NULL DEFAULT '',
+    outcome          TEXT    NOT NULL DEFAULT 'unknown',
+    is_opening_pitch INTEGER NOT NULL DEFAULT 0,
+    word_count       INTEGER NOT NULL DEFAULT 0,
+    budget           INTEGER NOT NULL DEFAULT 0,
+    duration         INTEGER NOT NULL DEFAULT 0,
+    token            INTEGER NOT NULL DEFAULT 0,
+    created_at       TEXT,
+    project_title    TEXT    NOT NULL DEFAULT '',
+    category_id      INTEGER NOT NULL DEFAULT 0,
+    project_skills   TEXT    NOT NULL DEFAULT '[]',
+    harvested_at     TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS voice_by_outcome ON voice_samples(outcome, is_opening_pitch);
 """
 
 
@@ -174,3 +196,110 @@ class Store:
             }
             for r in rows
         ]
+
+    # ---- voice corpus -----------------------------------------------------
+
+    def save_voice_samples(self, samples, now: datetime) -> int:
+        """Store harvested proposals. Re-harvesting updates, never duplicates."""
+        stamp = now.isoformat()
+        count = 0
+        for s in samples:
+            self._db.execute(
+                """
+                INSERT INTO voice_samples
+                    (bid_id, project_id, text, outcome, is_opening_pitch,
+                     word_count, budget, duration, token, created_at,
+                     project_title, category_id, project_skills, harvested_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(bid_id) DO UPDATE SET
+                    text             = excluded.text,
+                    outcome          = excluded.outcome,
+                    is_opening_pitch = excluded.is_opening_pitch,
+                    word_count       = excluded.word_count,
+                    budget           = excluded.budget,
+                    project_title    = excluded.project_title,
+                    project_skills   = excluded.project_skills,
+                    harvested_at     = excluded.harvested_at
+                """,
+                (
+                    s.bid_id, s.project_id, s.text, s.outcome.value,
+                    1 if s.is_opening_pitch else 0, s.word_count, s.budget,
+                    s.duration, s.token,
+                    s.created_at.isoformat() if s.created_at else None,
+                    s.project_title, s.category_id,
+                    json.dumps(list(s.project_skills), ensure_ascii=False), stamp,
+                ),
+            )
+            count += 1
+        self._db.commit()
+        return count
+
+    @staticmethod
+    def _voice_row(r) -> dict:
+        return {
+            "bid_id": r["bid_id"], "project_id": r["project_id"],
+            "text": r["text"], "outcome": r["outcome"],
+            "is_opening_pitch": bool(r["is_opening_pitch"]),
+            "word_count": r["word_count"], "budget": r["budget"],
+            "duration": r["duration"], "token": r["token"],
+            "created_at": r["created_at"], "project_title": r["project_title"],
+            "category_id": r["category_id"],
+            "project_skills": json.loads(r["project_skills"]),
+        }
+
+    def voice_samples(self, limit: int = 500) -> list[dict]:
+        rows = self._db.execute(
+            "SELECT * FROM voice_samples ORDER BY created_at DESC LIMIT ?", (limit,)
+        ).fetchall()
+        return [self._voice_row(r) for r in rows]
+
+    def teachable_samples(self, match_skills=(), limit: int = 3) -> list[dict]:
+        """Winning cold pitches, most relevant first.
+
+        Only wins that are genuine opening pitches qualify: a won bid whose
+        text was rewritten mid-negotiation would teach a writer to open a cold
+        proposal with a follow-up message.
+
+        Relevance is skill overlap with the target project, but an unmatched
+        project still gets examples — a writer with no voice reference at all
+        falls back on generic LLM register, which is the exact failure mode
+        this corpus exists to prevent.
+        """
+        rows = self._db.execute(
+            """
+            SELECT * FROM voice_samples
+            WHERE outcome = 'won' AND is_opening_pitch = 1
+            ORDER BY word_count DESC
+            """
+        ).fetchall()
+        samples = [self._voice_row(r) for r in rows]
+
+        wanted = {s.lower() for s in match_skills}
+        if wanted:
+            def overlap(sample: dict) -> int:
+                have = {s.lower() for s in sample["project_skills"]}
+                title = sample["project_title"].lower()
+                return len(wanted & have) + sum(1 for w in wanted if w in title)
+
+            samples.sort(key=lambda s: (-overlap(s), -s["word_count"]))
+        return samples[:limit]
+
+    def voice_stats(self) -> dict:
+        rows = self.voice_samples(limit=10_000)
+        won = [r for r in rows if r["outcome"] == "won"]
+        teachable = [r for r in won if r["is_opening_pitch"]]
+        declined = [r for r in rows
+                    if r["outcome"] == "declined" and r["is_opening_pitch"]]
+
+        def median(values: list[int]) -> int:
+            v = sorted(values)
+            return v[len(v) // 2] if v else 0
+
+        return {
+            "total": len(rows),
+            "won": len(won),
+            "teachable": len(teachable),
+            "declined_pitches": len(declined),
+            "median_won_words": median([r["word_count"] for r in teachable]),
+            "median_declined_words": median([r["word_count"] for r in declined]),
+        }

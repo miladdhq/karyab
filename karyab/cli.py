@@ -190,6 +190,76 @@ def cmd_discover(args) -> int:
     return 0
 
 
+def cmd_harvest(args) -> int:
+    """Fetch the user's own bid history and build the voice corpus."""
+    import json as _json
+
+    from playwright.sync_api import sync_playwright
+
+    from .browser.authed import AuthTokenMissing, bearer_header, extract_token
+    from .browser.session import SESSION_PATH, SessionExpired, load_context
+    from .harvest import harvest
+
+    now = datetime.now(timezone.utc)
+    try:
+        state = _json.loads(SESSION_PATH.read_text(encoding="utf-8"))
+        headers = bearer_header(extract_token(state))
+    except FileNotFoundError:
+        print(f"No saved session at {SESSION_PATH}. Run `karyab login` first.",
+              file=sys.stderr)
+        return 1
+    except AuthTokenMissing as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    try:
+        with sync_playwright() as p:
+            browser, context = load_context(p, headless=True)
+            with Store(args.db) as store:
+                result = harvest(context.request, headers, store, now,
+                                 max_pages=args.max_pages)
+                stats = store.voice_stats()
+            browser.close()
+    except SessionExpired as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    print(f"Harvested {result.fetched} proposals across {result.pages} page(s).")
+    for error in result.errors:
+        print(f"  ! {error}", file=sys.stderr)
+    print()
+    print(f"  won            {stats['won']:4}")
+    print(f"  teachable      {stats['teachable']:4}  "
+          f"(wins that are genuine opening pitches, not negotiated replies)")
+    print(f"  declined       {stats['declined_pitches']:4}")
+    print()
+    print(f"  winning pitches run a median of {stats['median_won_words']} words; "
+          f"declined ones {stats['median_declined_words']}.")
+    return 0
+
+
+def cmd_voice(args) -> int:
+    """Show the winning proposals the writer will learn from."""
+    skills = tuple(s.strip() for s in (args.skills or "").split(",") if s.strip())
+    with Store(args.db) as store:
+        rows = store.teachable_samples(match_skills=skills, limit=args.limit)
+        stats = store.voice_stats()
+
+    if not rows:
+        print("No voice corpus yet. Run `karyab harvest` first.")
+        return 0
+
+    where = f" matching {list(skills)}" if skills else ""
+    print(f"{stats['teachable']} teachable winning pitches; "
+          f"showing {len(rows)}{where}.\n")
+    for row in rows:
+        print(f"[{row['budget']:,} toman · {row['word_count']} words] "
+              f"{row['project_title'][:44]}")
+        print(f"  {row['text'].strip()[:400]}")
+        print()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     # `--config` and `--db` must work both before AND after the subcommand
     # (`karyab --config X scan` and `karyab scan --config X`), because users
@@ -255,6 +325,21 @@ def main(argv: list[str] | None = None) -> int:
     p_disc.add_argument("--show", action="store_true",
                         help="run the browser visibly instead of headless")
     p_disc.set_defaults(func=cmd_discover)
+
+    p_harvest = sub.add_parser(
+        "harvest", parents=[sub_shared],
+        help="fetch your own proposal history and build the voice corpus")
+    p_harvest.add_argument("--max-pages", type=int, default=None,
+                           help="stop after N pages (default: all)")
+    p_harvest.set_defaults(func=cmd_harvest)
+
+    p_voice = sub.add_parser(
+        "voice", parents=[sub_shared],
+        help="show the winning pitches the writer will learn from")
+    p_voice.add_argument("--skills", default="",
+                         help="comma-separated terms to rank examples against")
+    p_voice.add_argument("--limit", type=int, default=3)
+    p_voice.set_defaults(func=cmd_voice)
 
     args = parser.parse_args(argv)
     return args.func(args)
