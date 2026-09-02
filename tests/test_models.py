@@ -58,6 +58,30 @@ def test_detail_parses_timestamps_and_counts_files(detail_raw):
     assert detail.file_count == 2
 
 
+def test_detail_from_detail_accepts_a_bare_unwrapped_payload(detail_raw):
+    # Task 3's API client unwraps ["data"] before calling from_detail, so the
+    # bare-payload path is the one production actually exercises.
+    enveloped = ProjectDetail.from_detail(detail_raw)
+    bare = ProjectDetail.from_detail(detail_raw["data"])
+
+    assert bare == enveloped
+    assert bare.id == 322126
+    assert bare.file_count == 2
+
+
+def test_haystack_is_lowercased_and_includes_title_description_and_skills(
+    listing_raw,
+):
+    project = Project.from_listing(listing_raw)
+    haystack = project.haystack
+
+    assert haystack == haystack.lower()
+    assert project.title.lower() in haystack
+    assert project.description.lower() in haystack
+    assert project.skills
+    assert all(skill.lower() in haystack for skill in project.skills)
+
+
 def test_parse_timestamp_handles_both_observed_shapes():
     utc = parse_timestamp("2026-08-31T16:24:15.000000Z")
     tehran = parse_timestamp("2026-10-01T20:09:48.000000+03:30")
