@@ -142,7 +142,7 @@ class Store:
         )
         self._db.commit()
 
-    def latest_scores(self, limit: int = 50) -> list[dict]:
+    def top_scores(self, limit: int = 50) -> list[dict]:
         rows = self._db.execute(
             """
             SELECT s.project_id, s.stage, s.value, s.rejected, s.reasons,

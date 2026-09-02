@@ -176,7 +176,7 @@ def test_cmd_scan_stores_projects_and_prints_a_report_without_the_network(
     assert "fetched 0 details" in out
 
     with Store(db) as store:
-        rows = store.latest_scores(limit=100)
+        rows = store.top_scores(limit=100)
     assert len(rows) == 24, "every seen project must be stored, rejects included"
 
 

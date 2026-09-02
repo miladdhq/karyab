@@ -128,7 +128,7 @@ def cmd_scan(args) -> int:
 
     with Store(args.db) as store, KarlancerClient() as client:
         result = run_scan(client, store, config, now=now, pages=args.pages)
-        rows = store.latest_scores(limit=args.limit)
+        rows = store.top_scores(limit=args.limit)
 
     print(
         f"Saw {result.seen} projects ({result.new} new), "
@@ -146,7 +146,7 @@ def cmd_scan(args) -> int:
 def cmd_report(args) -> int:
     config = _load_config(Path(args.config))
     with Store(args.db) as store:
-        rows = store.latest_scores(limit=args.limit)
+        rows = store.top_scores(limit=args.limit)
     print(render_report(rows, threshold=config.threshold, show_rejected=args.rejected),
           end="")
     return 0

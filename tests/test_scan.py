@@ -48,7 +48,7 @@ def test_a_scan_stores_every_project_it_sees(tmp_path, listing_page):
 
     with Store(tmp_path / "k.db") as store:
         result = run_scan(client, store, CFG, now=NOW, pages=1, sleep=_no_sleep)
-        stored = store.latest_scores(limit=100)
+        stored = store.top_scores(limit=100)
 
     assert result.seen == 24
     assert result.new == 24
@@ -75,7 +75,7 @@ def test_off_category_projects_are_rejected_with_reasons(tmp_path, listing_page)
 
     with Store(tmp_path / "k.db") as store:
         result = run_scan(client, store, CFG, now=NOW, pages=1, sleep=_no_sleep)
-        stored = store.latest_scores(limit=100)
+        stored = store.top_scores(limit=100)
 
     assert result.rejected > 0
     for row in stored:
@@ -100,7 +100,7 @@ def test_a_detail_failure_does_not_abort_the_scan(tmp_path, listing_page):
 
     with Store(tmp_path / "k.db") as store:
         result = run_scan(client, store, CFG, now=NOW, pages=1, sleep=_no_sleep)
-        stored = store.latest_scores(limit=100)
+        stored = store.top_scores(limit=100)
 
     assert result.seen == 24
     assert result.errors, "the failure should be reported, not swallowed"
@@ -125,7 +125,7 @@ def test_an_unparsable_detail_does_not_abort_the_scan(tmp_path, listing_page):
 
     with Store(tmp_path / "k.db") as store:
         result = run_scan(client, store, CFG, now=NOW, pages=1, sleep=_no_sleep)
-        stored = store.latest_scores(limit=100)
+        stored = store.top_scores(limit=100)
 
     assert result.seen == 24
     assert result.errors, "the failure should be reported, not swallowed"
@@ -181,7 +181,7 @@ def test_promoted_projects_clear_the_threshold(tmp_path, listing_page):
 
     with Store(tmp_path / "k.db") as store:
         result = run_scan(client, store, CFG, now=NOW, pages=1, sleep=_no_sleep)
-        stored = store.latest_scores(limit=100)
+        stored = store.top_scores(limit=100)
 
     clearing = [r for r in stored if not r["rejected"] and r["value"] >= CFG.threshold]
     assert result.promoted == len(clearing)
