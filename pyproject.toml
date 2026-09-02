@@ -1,0 +1,16 @@
+[project]
+name = "karyab"
+version = "0.1.0"
+description = "Selective proposal assistant for karlancer.com"
+requires-python = ">=3.12"
+dependencies = ["httpx>=0.27"]
+
+[project.scripts]
+karyab = "karyab.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
