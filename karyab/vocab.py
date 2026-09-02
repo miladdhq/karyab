@@ -22,8 +22,12 @@ from .terms import TERM_PATTERNS, term_regex
 _OUTCOME_WEIGHT = {5: 1.0, 1: 0.4}
 _UNRATED_WEIGHT = 0.8
 
-# Declared on the profile but winning nothing by name: kept, but quietly.
-_UNPROVEN_WEIGHT = 0.35
+# Fallback floor for declared-but-unproven skills, used only when there is
+# no proven evidence at all to derive a floor from (an empty win record).
+# Whenever proven terms exist, build_vocabulary derives the floor from
+# their own distribution instead, so a term with real (if thin) evidence
+# can never be outranked by a term with none.
+_NO_EVIDENCE_FLOOR = 0.35
 
 _MAX_EXAMPLES = 3
 
@@ -78,6 +82,20 @@ def build_vocabulary(profile: dict) -> tuple[VocabTerm, ...]:
     # Snapshot before appending: the loop below must compare declared skills
     # against proven concepts only, not against entries it just added.
     proven = tuple(terms)
+
+    # The floor for unproven skills must sit below every proven weight at
+    # any win distribution, not just this profile's — otherwise a term with
+    # a couple of real wins (wireguard, python, next.js) can end up ranked
+    # below a term the user only declared and never won, which is exactly
+    # backwards for a vocabulary built to prefer demonstrated outcomes.
+    # Derive the floor from the weakest proven term instead of hardcoding
+    # it; only fall back to the fixed floor when there is no proven
+    # evidence at all to derive one from.
+    if proven:
+        floor = max(round(min(t.weight for t in proven) * 0.5, 2), 0.01)
+    else:
+        floor = _NO_EVIDENCE_FLOOR
+
     covered = {t.term for t in proven}
     for name in declared:
         if not name or name in covered:
@@ -88,7 +106,7 @@ def build_vocabulary(profile: dict) -> tuple[VocabTerm, ...]:
         terms.append(
             VocabTerm(
                 term=name,
-                weight=_UNPROVEN_WEIGHT,
+                weight=floor,
                 wins=0,
                 proven=False,
                 examples=(),

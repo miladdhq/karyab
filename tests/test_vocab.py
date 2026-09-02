@@ -36,13 +36,33 @@ def test_proven_terms_carry_example_titles(profile_raw):
 
 def test_declared_but_unproven_skills_are_kept_at_a_floor_weight(profile_raw):
     terms = build_vocabulary(profile_raw)
+    proven = [t for t in terms if t.proven]
     unproven = [t for t in terms if not t.proven]
 
     # express.js is declared on the profile but wins no project by name.
+    # The floor is derived from the proven distribution (see build_vocabulary),
+    # so the exact number varies with the data — what must always hold is
+    # that every unproven term still sits strictly below every proven one.
     assert unproven, "declared skills with no wins should still be present"
+    min_proven_weight = min(t.weight for t in proven)
     for term in unproven:
         assert term.wins == 0
-        assert term.weight == 0.35
+        assert term.weight < min_proven_weight
+
+
+def test_a_weak_evidence_proven_term_still_outranks_a_zero_evidence_declaration(profile_raw):
+    # wireguard has real (if few) wins; express.js is only ever declared.
+    # Demonstrated outcomes must outrank mere declaration however thin the
+    # evidence -- this is the whole reason the vocabulary is built from
+    # outcomes instead of the declared list, and it is exactly the
+    # invariant a fixed unproven floor could silently violate.
+    by_term = {t.term: t for t in build_vocabulary(profile_raw)}
+
+    assert by_term["wireguard"].proven
+    assert by_term["wireguard"].wins == 2
+    assert not by_term["express.js"].proven
+    assert by_term["express.js"].wins == 0
+    assert by_term["wireguard"].weight > by_term["express.js"].weight
 
 
 def test_a_one_star_win_counts_for_less_than_a_five_star_win():
