@@ -99,16 +99,19 @@ def run_scan(
                 except ApiError as exc:
                     errors.append(f"detail {project.slug}: {exc}")
                 else:
-                    detail = ProjectDetail.from_detail(detail_raw)
-                    final = score_detail(
-                        score,
-                        project,
-                        detail,
-                        config,
-                        now=now,
-                        first_seen_at=first_seen_at,
-                    )
-                    stage = 2
+                    try:
+                        detail = ProjectDetail.from_detail(detail_raw)
+                        final = score_detail(
+                            score,
+                            project,
+                            detail,
+                            config,
+                            now=now,
+                            first_seen_at=first_seen_at,
+                        )
+                        stage = 2
+                    except Exception as exc:  # a malformed detail must not stop the feed
+                        errors.append(f"unparsable detail {project.slug}: {exc}")
 
             store.record_score(
                 project.id, stage, final.value, final.rejected, final.labels, now

@@ -100,6 +100,31 @@ def test_a_detail_failure_does_not_abort_the_scan(tmp_path, listing_page):
     assert len(stored) == 24
 
 
+def test_an_unparsable_detail_does_not_abort_the_scan(tmp_path, listing_page):
+    rows = listing_page["data"]["data"]
+
+    class Explosive:
+        """A detail payload that blows up wherever models.py tries to read it."""
+
+        def __contains__(self, item):
+            raise ValueError("not a real payload")
+
+    class BadDetail(FakeClient):
+        def project_detail(self, slug: str):
+            self.detail_calls.append(slug)
+            return Explosive()
+
+    client = BadDetail({1: rows})
+
+    with Store(tmp_path / "k.db") as store:
+        result = run_scan(client, store, CFG, now=NOW, pages=1)
+        stored = store.latest_scores(limit=100)
+
+    assert result.seen == 24
+    assert result.errors, "the failure should be reported, not swallowed"
+    assert len(stored) == 24, "the project must still be stored, on its stage-1 score"
+
+
 def test_a_page_failure_is_reported_and_the_scan_continues(tmp_path, listing_page):
     rows = listing_page["data"]["data"]
 
