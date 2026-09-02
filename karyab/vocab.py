@@ -91,8 +91,16 @@ def build_vocabulary(profile: dict) -> tuple[VocabTerm, ...]:
     # Derive the floor from the weakest proven term instead of hardcoding
     # it; only fall back to the fixed floor when there is no proven
     # evidence at all to derive one from.
+    #
+    # No 0.01 clamp here: proven weights are rounded to 2 decimals and can
+    # themselves bottom out at 0.01 (round(score / top, 2) or 0.01) when one
+    # dominant term compresses the rest. Clamping the floor to that same
+    # 0.01 would tie it with a weak proven term instead of sitting below
+    # it. Rounding the floor to 4 decimals instead keeps it on a finer
+    # grid, so half of even the smallest possible proven weight (0.01) is
+    # 0.005 — strictly below, never equal, with no clamp required.
     if proven:
-        floor = max(round(min(t.weight for t in proven) * 0.5, 2), 0.01)
+        floor = round(min(t.weight for t in proven) / 2.0, 4)
     else:
         floor = _NO_EVIDENCE_FLOOR
 

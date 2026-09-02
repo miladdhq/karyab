@@ -65,6 +65,45 @@ def test_a_weak_evidence_proven_term_still_outranks_a_zero_evidence_declaration(
     assert by_term["wireguard"].weight > by_term["express.js"].weight
 
 
+def test_the_floor_never_ties_a_proven_term_at_a_dominant_win_distribution():
+    # A pathological but plausible distribution: one term with a large pile
+    # of wins compresses every other proven weight toward the 2-decimal
+    # grid's bottom rung (0.01). A floor that also lands on 0.01 ties an
+    # evidence-free declared skill with a term that has real, if thin,
+    # proof -- exactly the inversion this module exists to prevent. This
+    # profile is synthetic (built here, not read from docs/research/) and
+    # is shaped to land a proven term's weight at exactly 0.01 so the tie
+    # would be reachable if the floor were also clamped to 0.01.
+    profile = {
+        "profile": {"skills": [{"name": "database"}]},
+        "completed_projects": (
+            [
+                {"title": f"ساخت ربات تلگرام شماره {i}", "budget": 1_000_000, "rate": 5}
+                for i in range(200)
+            ]
+            + [{"title": "کار با فیگما برای پروژه", "budget": 1_000_000, "rate": 5}]
+        ),
+    }
+
+    terms = build_vocabulary(profile)
+    by_term = {t.term: t for t in terms}
+
+    # Confirm the pathological grid is actually hit: figma's weight rounds
+    # to the bottom of the 2-decimal grid, which is what makes the old
+    # 0.01-clamped floor collide with it.
+    assert by_term["figma"].weight == 0.01
+
+    proven = [t for t in terms if t.proven]
+    unproven = [t for t in terms if not t.proven]
+    assert unproven
+    for u in unproven:
+        for p in proven:
+            assert u.weight < p.weight, (
+                f"{u.term}={u.weight} does not sit strictly below "
+                f"{p.term}={p.weight}"
+            )
+
+
 def test_a_one_star_win_counts_for_less_than_a_five_star_win():
     profile = {
         "profile": {"skills": []},
