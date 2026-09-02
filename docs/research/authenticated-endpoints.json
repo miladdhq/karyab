@@ -1,0 +1,353 @@
+{
+ "/api/bids/": {
+  "methods": [
+   "GET"
+  ],
+  "status": 200,
+  "shape": {
+   "status": "str",
+   "data": {
+    "current_page": "int",
+    "total": "int",
+    "last_page": "int",
+    "first_page_url": "str",
+    "last_page_url": "str",
+    "next_page_url": "str",
+    "per_page": "int",
+    "prev_page_url": "NoneType",
+    "from": "int",
+    "to": "int",
+    "data": [
+     {
+      "id": "...",
+      "user_id": "...",
+      "project_id": "...",
+      "budget": "...",
+      "description": "...",
+      "features": "...",
+      "duration": "...",
+      "status": "...",
+      "is_highlight": "...",
+      "is_pin": "...",
+      "is_multi": "...",
+      "start_date": "...",
+      "project": "...",
+      "milestones": "...",
+      "created_at": "...",
+      "token": "...",
+      "ai_description_token": "..."
+     },
+     "...x10"
+    ]
+   },
+   "error": "NoneType"
+  }
+ },
+ "/api/dashboard": {
+  "methods": [
+   "GET"
+  ],
+  "status": 200,
+  "shape": {
+   "status": "str",
+   "data": {
+    "wallet": {
+     "id": "int",
+     "user_id": "int",
+     "amount": "int",
+     "point": "int",
+     "score": "int",
+     "locked_amount": "int",
+     "last_month_income": "int",
+     "total_income": "int"
+    },
+    "user": {
+     "id": "int",
+     "first_name": "str",
+     "last_name": "str",
+     "username": "str",
+     "email": "str",
+     "description": "str",
+     "profile_status": "int",
+     "profile_status_info": {
+      "long_description": "...",
+      "avatar": "...",
+      "education": "...",
+      "review": "...",
+      "work_experience": "...",
+      "worksample": "...",
+      "services": "...",
+      "skills": "...",
+      "verified_national_card": "...",
+      "teacher": "...",
+      "extra_info": "...",
+      "video_avatar": "..."
+     },
+     "role": "str",
+     "rate": "float",
+     "rate_num": "int",
+     "country": "str",
+     "city": "str",
+     "telegram_id": "str",
+     "avatar": "str",
+     "is_forbidden_avatar": "bool",
+     "email_unsubscribe_token": "str",
+     "has_password": "bool",
+     "skills": [
+      "...",
+      "...x8"
+     ],
+     "completed_projects": "int"
+    },
+    "bids": [
+     {
+      "id": "...",
+      "description": "...",
+      "user_id": "...",
+      "budget": "...",
+      "duration": "...",
+      "is_highlight": "...",
+      "is_pin": "...",
+      "is_multi": "...",
+      "start_date": "...",
+      "project": "..."
+     },
+     "...x2"
+    ],
+    "bid_plan": [
+     {
+      "user_id": "...",
+      "plan_id": "...",
+      "total_bid": "...",
+      "used_bid": "...",
+      "start_date": "...",
+      "expire_date": "...",
+      "plan": "..."
+     },
+     "...x1"
+    ],
+    "orders": [],
+    "rooms": [
+     {
+      "id": "...",
+      "guest_name": "...",
+      "rate_num": "...",
+      "rate_sum": "...",
+      "rate": "...",
+      "avatar": "...",
+      "last_message": "...",
+      "user_id": "...",
+      "active_plan_id": "...",
+      "is_locked": "...",
+      "am_locked": "...",
+      "is_online": "...",
+      "is_open": "...",
+      "employer_is_open": "...",
+      "is_archived": "...",
+      "is_hidden": "...",
+      "updated_at": "...",
+      "unread": "...",
+      "quiz_num": "...",
+      "quiz_point": "..."
+     },
+     "...x2"
+    ],
+    "quizzes": [
+     {
+      "id": "...",
+      "name": "...",
+      "slug": "...",
+      "image_url": "...",
+      "category_id": "...",
+      "user_skill": "...",
+      "user_taken": "...",
+      "gold_expire_at": "...",
+      "silver_expire_at": "..."
+     },
+     "...x19"
+    ],
+    "pending_projects": "NoneType",
+    "completed_projects": "NoneType",
+    "in_progress_projects": [],
+    "suggest_projects_count": "int",
+    "xray": {
+     "credit": "int",
+     "status": "NoneType",
+     "token": "NoneType",
+     "old_data": "bool"
+    }
+   },
+   "error": "NoneType"
+  }
+ },
+ "/api/notifications/": {
+  "methods": [
+   "GET"
+  ],
+  "status": 200,
+  "shape": {
+   "status": "str",
+   "data": {
+    "alerts": [],
+    "cart_count": "int",
+    "notifications": {
+     "unread_message": "int",
+     "unread_message_archived": "int",
+     "unread_message_hidden": "int",
+     "unread_notification": "int",
+     "data": [
+      "...",
+      "...x5"
+     ]
+    },
+    "workdiary": {
+     "project": "int",
+     "service": "int"
+    }
+   },
+   "error": "NoneType"
+  }
+ },
+ "/api/notifications/rate": {
+  "methods": [
+   "GET"
+  ],
+  "status": 200,
+  "shape": {
+   "status": "str",
+   "data": [
+    {
+     "username": "str",
+     "title": "str",
+     "url": "str",
+     "type": "str"
+    },
+    "...x2"
+   ],
+   "error": "NoneType"
+  }
+ },
+ "/api/plans": {
+  "methods": [
+   "GET"
+  ],
+  "status": 200,
+  "shape": {
+   "status": "str",
+   "data": {
+    "plans": {
+     "id": "int",
+     "user_id": "int",
+     "plan_id": "int",
+     "total_bid": "int",
+     "used_bid": "int",
+     "bid_pin": "int",
+     "bid_highlight": "int",
+     "project_stat": "int",
+     "projects": "str",
+     "start_date": "str",
+     "expire_date": "str",
+     "created_at": "str",
+     "updated_at": "str",
+     "deleted_at": "NoneType",
+     "plan": {
+      "id": "...",
+      "name": "...",
+      "slug": "...",
+      "amount": "...",
+      "length": "...",
+      "is_available": "...",
+      "type": "...",
+      "total_bid": "...",
+      "max_skills": "...",
+      "commission": "...",
+      "sms_subscribed": "...",
+      "email_subscribed": "...",
+      "bid_pin": "...",
+      "bid_highlight": "...",
+      "project_stat": "...",
+      "description": "...",
+      "created_at": "...",
+      "updated_at": "...",
+      "items": "...",
+      "base_discount_amount": "..."
+     }
+    },
+    "bidplans": [
+     {
+      "id": "...",
+      "user_id": "...",
+      "plan_id": "...",
+      "start_date": "...",
+      "expire_date": "...",
+      "total_bid": "...",
+      "used_bid": "...",
+      "created_at": "...",
+      "updated_at": "...",
+      "deleted_at": "..."
+     },
+     "...x1"
+    ],
+    "special_offer": "bool",
+    "special_offer_items": "NoneType",
+    "deadline": "NoneType",
+    "special_offer_amount": "NoneType"
+   },
+   "error": "NoneType"
+  }
+ },
+ "/api/projects": {
+  "methods": [
+   "GET"
+  ],
+  "status": 403,
+  "shape": null
+ },
+ "/api/rooms/": {
+  "methods": [
+   "GET"
+  ],
+  "status": 200,
+  "shape": {
+   "status": "str",
+   "data": {
+    "current_page": "int",
+    "total": "int",
+    "last_page": "int",
+    "first_page_url": "str",
+    "last_page_url": "str",
+    "next_page_url": "str",
+    "per_page": "int",
+    "prev_page_url": "NoneType",
+    "from": "int",
+    "to": "int",
+    "data": [
+     {
+      "id": "...",
+      "guest_name": "...",
+      "rate_num": "...",
+      "rate_sum": "...",
+      "rate": "...",
+      "avatar": "...",
+      "last_message": "...",
+      "user_id": "...",
+      "active_plan_id": "...",
+      "is_locked": "...",
+      "am_locked": "...",
+      "is_online": "...",
+      "is_open": "...",
+      "employer_is_open": "...",
+      "is_archived": "...",
+      "is_hidden": "...",
+      "updated_at": "...",
+      "unread": "...",
+      "quiz_num": "...",
+      "quiz_point": "..."
+     },
+     "...x10"
+    ]
+   },
+   "error": "NoneType"
+  }
+ }
+}
