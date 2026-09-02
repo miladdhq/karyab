@@ -139,5 +139,32 @@ def test_to_toml_quotes_names_containing_dots():
     assert parsed["skills"]["next.js"] == 0.5
 
 
+def test_to_toml_escapes_a_quote_in_a_term_name():
+    # An unescaped quote would close the TOML string early and emit
+    # invalid TOML, which `karyab init` would then write and `Config.load`
+    # could not parse -- breaking the user's very first command.
+    terms = [
+        VocabTerm(
+            term='weird "skill" name',
+            weight=0.42,
+            wins=1,
+            proven=True,
+            examples=("an example",),
+        )
+    ]
+    parsed = tomllib.loads(to_toml(terms))
+
+    assert parsed["skills"]['weird "skill" name'] == 0.42
+
+
+def test_to_toml_escapes_a_backslash_in_a_term_name():
+    terms = [
+        VocabTerm(term=r"c:\tools\skill", weight=0.3, wins=0, proven=False, examples=())
+    ]
+    parsed = tomllib.loads(to_toml(terms))
+
+    assert parsed["skills"][r"c:\tools\skill"] == 0.3
+
+
 def test_an_empty_profile_produces_an_empty_vocabulary():
     assert build_vocabulary({"profile": {"skills": []}, "completed_projects": []}) == ()

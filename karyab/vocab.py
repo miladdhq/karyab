@@ -125,6 +125,17 @@ def build_vocabulary(profile: dict) -> tuple[VocabTerm, ...]:
     return tuple(terms)
 
 
+def _escape_toml_basic_string(value: str) -> str:
+    """Escape a value for use inside a TOML basic ("...") string.
+
+    Only the backslash and the double quote need escaping here -- Persian
+    text and everything else is valid literally in a basic string -- but a
+    term name containing either would otherwise emit invalid TOML that
+    `Config.load` cannot parse.
+    """
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def to_toml(terms: Iterable[VocabTerm]) -> str:
     """Render a [skills] table for the config file."""
     lines = ["[skills]"]
@@ -134,5 +145,6 @@ def to_toml(terms: Iterable[VocabTerm]) -> str:
             if term.proven and term.examples
             else "  # declared on the profile, no win by this name"
         )
-        lines.append(f'"{term.term}" = {term.weight}{note}')
+        name = _escape_toml_basic_string(term.term)
+        lines.append(f'"{name}" = {term.weight}{note}')
     return "\n".join(lines) + "\n"

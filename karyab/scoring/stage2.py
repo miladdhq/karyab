@@ -31,8 +31,8 @@ FRESHNESS_BANDS: tuple[tuple[float, float, str], ...] = (
     (10, 15.0, "posted in the last 10 minutes"),
     (30, 10.0, "posted in the last half hour"),
     (120, 4.0, "posted in the last 2 hours"),
-    (720, 0.0, "posted today"),
-    (2880, -10.0, "over 12 hours old"),
+    (720, 0.0, "posted in the last 12 hours"),
+    (2880, -10.0, "posted in the last 2 days"),
     (float("inf"), -20.0, "more than 2 days old"),
 )
 
@@ -61,8 +61,12 @@ def score_detail(
     age_minutes = max(0.0, (now - posted).total_seconds() / 60.0)
     for limit, points, label in FRESHNESS_BANDS:
         if age_minutes <= limit:
-            if points:
-                reasons.append(Reason(label, points))
+            # Always record the band's label, even when its points are 0.0
+            # (the "posted in the last 12 hours" band): a zero-point band is
+            # still a real freshness signal the report should show, not a
+            # reason that silently vanishes because it happens not to move
+            # the score.
+            reasons.append(Reason(label, points))
             break
 
     if detail.file_count:
