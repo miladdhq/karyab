@@ -1,0 +1,84 @@
+import tomllib
+
+from karyab.vocab import VocabTerm, build_vocabulary, to_toml
+
+
+def test_bots_are_the_heaviest_term(profile_raw):
+    terms = build_vocabulary(profile_raw)
+    by_term = {t.term: t for t in terms}
+
+    assert "bot" in by_term
+    assert by_term["bot"].wins >= 10
+
+
+def test_terms_are_ordered_by_weight_descending(profile_raw):
+    terms = build_vocabulary(profile_raw)
+    weights = [t.weight for t in terms]
+    assert weights == sorted(weights, reverse=True)
+
+
+def test_the_top_term_is_normalised_to_one(profile_raw):
+    terms = build_vocabulary(profile_raw)
+    assert terms[0].weight == 1.0
+    assert all(0.0 < t.weight <= 1.0 for t in terms)
+
+
+def test_proven_terms_carry_example_titles(profile_raw):
+    terms = build_vocabulary(profile_raw)
+    proven = [t for t in terms if t.proven]
+
+    assert proven
+    for term in proven:
+        assert term.wins > 0
+        assert term.examples
+        assert all(isinstance(e, str) and e for e in term.examples)
+
+
+def test_declared_but_unproven_skills_are_kept_at_a_floor_weight(profile_raw):
+    terms = build_vocabulary(profile_raw)
+    unproven = [t for t in terms if not t.proven]
+
+    # express.js is declared on the profile but wins no project by name.
+    assert unproven, "declared skills with no wins should still be present"
+    for term in unproven:
+        assert term.wins == 0
+        assert term.weight == 0.35
+
+
+def test_a_one_star_win_counts_for_less_than_a_five_star_win():
+    profile = {
+        "profile": {"skills": []},
+        "completed_projects": [
+            {"title": "ساخت ربات تلگرام الف", "budget": 1_000_000, "rate": 5},
+            {"title": "ساخت ربات تلگرام ب", "budget": 1_000_000, "rate": 5},
+            {"title": "طراحی سایت الف", "budget": 1_000_000, "rate": 1},
+            {"title": "طراحی سایت ب", "budget": 1_000_000, "rate": 1},
+        ],
+    }
+    by_term = {t.term: t for t in build_vocabulary(profile)}
+
+    assert by_term["telegram bot"].wins == 2
+    assert by_term["website"].wins == 2
+    assert by_term["telegram bot"].weight > by_term["website"].weight
+
+
+def test_to_toml_round_trips_into_a_skills_table(profile_raw):
+    terms = build_vocabulary(profile_raw)
+    text = to_toml(terms)
+    parsed = tomllib.loads(text)
+
+    assert set(parsed) == {"skills"}
+    assert parsed["skills"]
+    for name, weight in parsed["skills"].items():
+        assert isinstance(name, str)
+        assert 0.0 < float(weight) <= 1.0
+
+
+def test_to_toml_quotes_names_containing_dots():
+    terms = [VocabTerm(term="next.js", weight=0.5, wins=1, proven=True, examples=("x",))]
+    parsed = tomllib.loads(to_toml(terms))
+    assert parsed["skills"]["next.js"] == 0.5
+
+
+def test_an_empty_profile_produces_an_empty_vocabulary():
+    assert build_vocabulary({"profile": {"skills": []}, "completed_projects": []}) == ()
