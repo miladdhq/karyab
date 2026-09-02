@@ -45,6 +45,16 @@ class KarlancerClient:
             transport=transport,
             headers={"User-Agent": user_agent, "Accept": "application/json"},
             follow_redirects=True,
+            # karlancer.com is an Iranian domestic site. A user's proxy
+            # (commonly a SOCKS tunnel such as V2Ray) exists to reach
+            # foreign sites; routing domestic traffic through it is both
+            # unnecessary and, in the common case of a bare `socks://`
+            # scheme that httpx does not accept, an outright crash. Ignore
+            # HTTP_PROXY/ALL_PROXY/etc unconditionally rather than let
+            # ambient shell state decide whether this tool works. Anyone
+            # who genuinely needs a proxy here can pass their own
+            # `transport=` to KarlancerClient.
+            trust_env=False,
         )
 
     def __enter__(self) -> "KarlancerClient":

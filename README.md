@@ -19,6 +19,13 @@ python3 -m venv .venv
 `[skills]` table it generates and correct anything that looks wrong — those
 weights decide which projects surface.
 
+karyab talks to karlancer.com directly and deliberately ignores
+`HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY` — karlancer.com is an Iranian
+domestic site, so routing it through a foreign-bound proxy (a SOCKS tunnel
+such as V2Ray, say) is both unnecessary and, with a bare `socks://` scheme,
+an outright crash. If you genuinely need a proxy for this host, pass your
+own `transport=` to `KarlancerClient`.
+
 ## Use
 
 ```bash

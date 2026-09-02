@@ -97,3 +97,41 @@ def test_non_json_body_raises_api_error():
     with _client(handler) as client:
         with pytest.raises(ApiError):
             client.search_projects()
+
+
+def test_the_client_ignores_the_ambient_proxy_environment(monkeypatch):
+    """karlancer.com is domestic; a user's SOCKS tunnel must never gate it.
+
+    A shell that permanently exports ALL_PROXY=socks://127.0.0.1:PORT/ (a
+    common V2Ray setup) makes httpx raise *during construction*, before any
+    request is even sent, if the client trusts the environment -- socks://
+    is not even a scheme httpx accepts, proxy extra or not.
+
+    Deliberately no `transport=` is passed to KarlancerClient() here: in
+    httpx, environment proxies are only consulted when the caller has not
+    supplied a transport of their own (`allow_env_proxies = trust_env and
+    transport is None`, in httpx.Client.__init__). That is exactly how
+    `cmd_scan` constructs this client in production. A test that always
+    passed a MockTransport at construction time would never exercise this
+    bug at all -- it was tried and confirmed to pass even against the
+    unfixed client.
+
+    The transport is swapped in afterwards purely so the request below
+    never touches the network; construction, not this swap, is what proves
+    the fix.
+    """
+    monkeypatch.setenv("ALL_PROXY", "socks://127.0.0.1:10808/")
+    monkeypatch.setenv("HTTPS_PROXY", "http://127.0.0.1:10808/")
+    monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:10808/")
+
+    client = KarlancerClient()  # must not raise despite the proxy env above
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"status": "success", "data": {"data": []}})
+
+    client._client._transport = httpx.MockTransport(handler)
+
+    with client:
+        rows = client.search_projects()
+
+    assert rows == []
