@@ -86,6 +86,34 @@ def test_no_skill_overlap_is_a_low_score_not_a_rejection():
     assert any("skill" in label.lower() for label in score.labels)
 
 
+def test_the_no_skill_penalty_is_pinned():
+    # A saturated skill match (matched weight >= SKILL_SATURATION) always
+    # earns the full SKILL_MAX bonus regardless of exactly which terms hit,
+    # so holding every other component identical between the two projects
+    # isolates precisely the gap NO_SKILL_PENALTY is responsible for. If
+    # NO_SKILL_PENALTY were weakened toward 0.0, this gap would shrink and
+    # the assertion below would catch it.
+    matched = _p(
+        title="یک پروژه",
+        description="",
+        skills=[
+            {"id": 1, "name": "bot"},
+            {"id": 2, "name": "telegram bot"},
+            {"id": 3, "name": "react"},
+            {"id": 4, "name": "website"},
+        ],
+    )
+    unmatched = _p(title="ترجمه متن انگلیسی", description="", skills=[])
+
+    with_match = score_listing(matched, CFG)
+    without_match = score_listing(unmatched, CFG)
+
+    assert any("skill match" in l for l in with_match.labels)
+    assert any("no skill term matched" in l for l in without_match.labels)
+    # SKILL_MAX (55.0, saturated) minus NO_SKILL_PENALTY (-15.0) is 70.0.
+    assert with_match.value - without_match.value == 70.0
+
+
 def test_an_english_vocabulary_term_matches_a_persian_title():
     # The vocabulary is keyed on English terms; the projects are Persian.
     # A substring matcher would score this zero.

@@ -118,3 +118,82 @@ def test_naive_timestamps_do_not_crash_the_scorer():
 def test_the_result_stays_within_range():
     scored = _score(_detail(created_at=NOW, file_count=9, description="y" * 5000))
     assert 0.0 <= scored.value <= 100.0
+
+
+# --- freshness band boundaries -------------------------------------------
+#
+# A mutation test proved every band's *value* was pinned but no band's
+# *edge* was: widening the 10-minute edge to 15, the 30-minute edge to 45,
+# or IMMINENT_DEADLINE_HOURS from 72 to 200 all left the suite green. Each
+# test below scores a project at exactly the edge and one second past it,
+# and asserts the literal (hardcoded, not imported) point value on both
+# sides -- so a shifted edge changes which value applies on the "past"
+# side and the test catches it. Confirmed to fail when an edge is shifted;
+# see the fix report.
+
+
+def test_freshness_band_edge_10_minutes_is_pinned():
+    at_edge = _score(_detail(created_at=NOW - timedelta(minutes=10)))
+    past_edge = _score(_detail(created_at=NOW - timedelta(minutes=10, seconds=1)))
+    assert at_edge.value == BASE.value + 15.0
+    assert past_edge.value == BASE.value + 10.0
+
+
+def test_freshness_band_edge_30_minutes_is_pinned():
+    at_edge = _score(_detail(created_at=NOW - timedelta(minutes=30)))
+    past_edge = _score(_detail(created_at=NOW - timedelta(minutes=30, seconds=1)))
+    assert at_edge.value == BASE.value + 10.0
+    assert past_edge.value == BASE.value + 4.0
+
+
+def test_freshness_band_edge_120_minutes_is_pinned():
+    at_edge = _score(_detail(created_at=NOW - timedelta(minutes=120)))
+    past_edge = _score(_detail(created_at=NOW - timedelta(minutes=120, seconds=1)))
+    assert at_edge.value == BASE.value + 4.0
+    assert past_edge.value == BASE.value  # the 0.0-point band
+
+
+def test_freshness_band_edge_720_minutes_is_pinned():
+    at_edge = _score(_detail(created_at=NOW - timedelta(minutes=720)))
+    past_edge = _score(_detail(created_at=NOW - timedelta(minutes=720, seconds=1)))
+    assert at_edge.value == BASE.value  # the 0.0-point band
+    assert past_edge.value == BASE.value - 10.0
+
+
+def test_freshness_band_edge_2880_minutes_is_pinned():
+    at_edge = _score(_detail(created_at=NOW - timedelta(minutes=2880)))
+    past_edge = _score(_detail(created_at=NOW - timedelta(minutes=2880, seconds=1)))
+    assert at_edge.value == BASE.value - 10.0
+    assert past_edge.value == BASE.value - 20.0
+
+
+def test_imminent_deadline_edge_72_hours_is_pinned():
+    at_edge = _score(_detail(hire_deadline=NOW + timedelta(hours=72)))
+    past_edge = _score(_detail(hire_deadline=NOW + timedelta(hours=72, seconds=1)))
+    # Both use the default created_at (NOW - 5 minutes -> +15.0 freshness
+    # points) and the default neutral description, so the only difference
+    # between the two is whether the imminent-deadline penalty applied.
+    assert at_edge.value == BASE.value + 15.0 - 8.0
+    assert past_edge.value == BASE.value + 15.0
+
+
+# --- description-length thresholds ----------------------------------------
+#
+# Same story as the freshness edges: THIN_DESCRIPTION (60) and
+# LONG_DESCRIPTION (200) were unpinned. created_at=NOW pins the freshness
+# contribution to a known +15.0 so the description's own contribution is
+# isolated.
+
+
+def test_thin_description_edge_60_chars_is_pinned():
+    at_edge = _score(_detail(created_at=NOW, description="a" * 60))
+    past_edge = _score(_detail(created_at=NOW, description="a" * 59))
+    assert at_edge.value == BASE.value + 15.0  # neutral: no penalty at 60
+    assert past_edge.value == BASE.value + 15.0 - 6.0  # thin-brief penalty
+
+
+def test_long_description_edge_200_chars_is_pinned():
+    at_edge = _score(_detail(created_at=NOW, description="a" * 200))
+    past_edge = _score(_detail(created_at=NOW, description="a" * 199))
+    assert at_edge.value == BASE.value + 15.0 + 4.0  # detailed-brief bonus
+    assert past_edge.value == BASE.value + 15.0  # neutral: no bonus at 199

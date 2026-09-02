@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
 
+import karyab.cli as cli
 from karyab.cli import main, render_report
+from karyab.store import Store
 
 
 def _rows():
@@ -127,6 +129,55 @@ def test_report_reads_the_database(tmp_path, capsys):
 
     assert code == 0
     assert "ربات" in out
+
+
+def test_cmd_scan_stores_projects_and_prints_a_report_without_the_network(
+    tmp_path, monkeypatch, capsys, listing_page
+):
+    """cmd_scan is the only subcommand with no automated test; the full
+    wiring has only ever been checked by one manual live run. KarlancerClient
+    is monkeypatched with an in-process fake built from the same fixture
+    data every other test uses, so this never touches the network."""
+
+    class FakeKarlancerClient:
+        """Stands in for KarlancerClient: no I/O, just the fixture data."""
+
+        def __init__(self):
+            self.detail_calls: list[str] = []
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def search_projects(self, page: int = 1):
+            return listing_page["data"]["data"] if page == 1 else []
+
+        def project_detail(self, slug: str):
+            # The config below (defaults, no skills) can never score a
+            # listing above run_scan's detail-fetch cutoff, so stage two
+            # must never be reached here.
+            self.detail_calls.append(slug)
+            raise AssertionError("stage two should not be reached in this test")
+
+    monkeypatch.setattr(cli, "KarlancerClient", FakeKarlancerClient)
+
+    db = tmp_path / "k.db"
+    missing_config = tmp_path / "no-such-config.toml"  # falls back to Config.default()
+
+    code = main(
+        ["scan", "--config", str(missing_config), "--db", str(db), "--pages", "1"]
+    )
+    out = capsys.readouterr().out
+
+    assert code == 0
+    assert "Saw 24 projects" in out
+    assert "fetched 0 details" in out
+
+    with Store(db) as store:
+        rows = store.latest_scores(limit=100)
+    assert len(rows) == 24, "every seen project must be stored, rejects included"
 
 
 def test_unknown_command_exits_nonzero(capsys):

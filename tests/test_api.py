@@ -1,5 +1,3 @@
-import json
-
 import httpx
 import pytest
 
@@ -97,6 +95,51 @@ def test_non_json_body_raises_api_error():
     with _client(handler) as client:
         with pytest.raises(ApiError):
             client.search_projects()
+
+
+def test_profile_unwraps_the_envelope(profile_raw):
+    # profile_raw (from conftest) is already the unwrapped "data" payload
+    # -- exactly what profile() must hand back -- so the mock response
+    # wraps it in the envelope client._get expects to strip.
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"status": "success", "data": profile_raw})
+
+    with _client(handler) as client:
+        payload = client.profile(65389)
+
+    assert payload == profile_raw
+    assert "completed_projects" in payload
+
+
+def test_profile_sends_the_page_query_parameter(profile_raw):
+    """`?page=N` is how the profile's completed_projects, reviews_pg and
+    worksamples sub-resources are walked -- Phase 2's harvest depends on it."""
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["url"] = str(request.url)
+        return httpx.Response(200, json={"status": "success", "data": profile_raw})
+
+    with _client(handler) as client:
+        client.profile(65389, page=3)
+
+    assert "page=3" in seen["url"]
+    assert seen["url"].startswith(
+        "https://www.karlancer.com/api/publics/profile/65389"
+    )
+
+
+def test_profile_defaults_to_page_one(profile_raw):
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["url"] = str(request.url)
+        return httpx.Response(200, json={"status": "success", "data": profile_raw})
+
+    with _client(handler) as client:
+        client.profile(65389)
+
+    assert "page=1" in seen["url"]
 
 
 def test_the_client_ignores_the_ambient_proxy_environment(monkeypatch):
