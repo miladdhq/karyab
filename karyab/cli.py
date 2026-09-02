@@ -152,6 +152,44 @@ def cmd_report(args) -> int:
     return 0
 
 
+def cmd_login(args) -> int:
+    """Open a browser so the user can log in; save the resulting session."""
+    from .browser.session import SESSION_PATH, SessionExpired, save_session
+
+    try:
+        path = save_session()
+    except SessionExpired as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    except ImportError:
+        print("Playwright is not installed. Run: .venv/bin/pip install playwright",
+              file=sys.stderr)
+        return 1
+
+    print(f"Session saved to {path} (readable only by you).")
+    print("It is account access in a file — it is gitignored, never log or share it.")
+    return 0
+
+
+def cmd_discover(args) -> int:
+    """Record which API calls the logged-in panel actually makes."""
+    from .browser.discover import discover
+    from .browser.session import SessionExpired
+
+    out = Path(args.out)
+    try:
+        report = discover(out, headless=not args.show)
+    except SessionExpired as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    api = {k: v for k, v in report.items() if k.startswith("/api/")}
+    print(f"Recorded {len(api)} API endpoint(s) -> {out}")
+    for path, info in api.items():
+        print(f"  {','.join(info.get('methods', [])):6} {info.get('status')}  {path}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     # `--config` and `--db` must work both before AND after the subcommand
     # (`karyab --config X scan` and `karyab scan --config X`), because users
@@ -204,6 +242,19 @@ def main(argv: list[str] | None = None) -> int:
     p_report.add_argument("--limit", type=int, default=30)
     p_report.add_argument("--rejected", action="store_true")
     p_report.set_defaults(func=cmd_report)
+
+    p_login = sub.add_parser(
+        "login", parents=[sub_shared],
+        help="log in to Karlancer in a browser and save the session")
+    p_login.set_defaults(func=cmd_login)
+
+    p_disc = sub.add_parser(
+        "discover", parents=[sub_shared],
+        help="record which API calls the logged-in panel makes")
+    p_disc.add_argument("--out", default="docs/research/authenticated-endpoints.json")
+    p_disc.add_argument("--show", action="store_true",
+                        help="run the browser visibly instead of headless")
+    p_disc.set_defaults(func=cmd_discover)
 
     args = parser.parse_args(argv)
     return args.func(args)
