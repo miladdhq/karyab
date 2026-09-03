@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS projects (
     id             INTEGER PRIMARY KEY,
     user_id        INTEGER NOT NULL DEFAULT 0,
     title          TEXT    NOT NULL DEFAULT '',
+    description    TEXT    NOT NULL DEFAULT '',
     slug           TEXT    NOT NULL DEFAULT '',
     category_id    INTEGER NOT NULL DEFAULT 0,
     min_budget     INTEGER NOT NULL DEFAULT 0,
@@ -78,6 +79,12 @@ class Store:
         self._db.row_factory = sqlite3.Row
         self._db.execute("PRAGMA foreign_keys = ON")
         self._db.executescript(SCHEMA)
+        # Databases created before the review dashboard have no description
+        # column; adding it is cheap and keeps old scans readable.
+        cols = {r[1] for r in self._db.execute("PRAGMA table_info(projects)")}
+        if "description" not in cols:
+            self._db.execute(
+                "ALTER TABLE projects ADD COLUMN description TEXT NOT NULL DEFAULT ''")
         self._db.commit()
 
     def __enter__(self) -> "Store":
@@ -104,11 +111,12 @@ class Store:
         self._db.execute(
             """
             INSERT INTO projects
-                (id, user_id, title, slug, category_id,
+                (id, user_id, title, description, slug, category_id,
                  min_budget, max_budget, token, skills, first_seen_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
-                title      = excluded.title,
+                title       = excluded.title,
+                description = excluded.description,
                 max_budget = excluded.max_budget,
                 min_budget = excluded.min_budget,
                 token      = excluded.token,
@@ -118,6 +126,7 @@ class Store:
                 project.id,
                 project.user_id,
                 project.title,
+                project.description,
                 project.slug,
                 project.category_id,
                 project.min_budget,
@@ -168,7 +177,8 @@ class Store:
         rows = self._db.execute(
             """
             SELECT s.project_id, s.stage, s.value, s.rejected, s.reasons,
-                   s.scored_at, p.title, p.slug, p.min_budget, p.max_budget,
+                   s.scored_at, p.title, p.description, p.slug,
+                   p.min_budget, p.max_budget,
                    p.token, p.category_id, p.first_seen_at
             FROM scores s
             JOIN projects p ON p.id = s.project_id
@@ -187,6 +197,7 @@ class Store:
                 "reasons": json.loads(r["reasons"]),
                 "scored_at": r["scored_at"],
                 "title": r["title"],
+                "description": r["description"],
                 "slug": r["slug"],
                 "min_budget": r["min_budget"],
                 "max_budget": r["max_budget"],

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>کاریاب</title>
+<style>
+  :root{
+    /* Persian illumination, held back: lapis structures, saffron is reserved
+       for the one thing that is genuinely scarce — bid tokens. */
+    --paper:#F7F7F4; --card:#FFFFFF; --ink:#16171C; --muted:#6B6F76;
+    --line:#E3E2DC; --lapis:#1E3A8A; --lapis-soft:#EDF0FA;
+    --saffron:#C8971B; --saffron-soft:#FBF3DE; --clay:#A2412F;
+    --ok:#2F6B4F;
+    --mono:"DejaVu Sans Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"Vazirmatn UI FD","Vazirmatn FD",Vazirmatn,system-ui,sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .num{font-family:var(--mono); font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:embed}
+
+  /* ---- masthead + the token meter, the one loud element ---- */
+  header{
+    border-bottom:1px solid var(--line); background:var(--card);
+    position:sticky; top:0; z-index:10;
+  }
+  .bar{max-width:1180px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:22px}
+  .wordmark{font-weight:900;font-size:20px;letter-spacing:-.01em}
+  .wordmark span{color:var(--lapis)}
+  nav{margin-inline-start:auto;display:flex;gap:4px}
+  nav button{
+    font:inherit;font-size:14px;border:0;background:none;color:var(--muted);
+    padding:7px 14px;border-radius:7px;cursor:pointer
+  }
+  nav button:hover{background:var(--paper);color:var(--ink)}
+  nav button[aria-current="true"]{background:var(--lapis-soft);color:var(--lapis);font-weight:700}
+
+  .meter{display:flex;align-items:center;gap:10px;padding:5px 12px;
+    background:var(--saffron-soft);border:1px solid #EFE0BC;border-radius:999px}
+  .meter .track{width:104px;height:7px;background:#EFE2C2;border-radius:99px;overflow:hidden}
+  .meter .fill{height:100%;background:var(--saffron);border-radius:99px;transition:width .4s ease}
+  .meter .label{font-size:12.5px;color:#7A5B10;white-space:nowrap}
+
+  main{max-width:1180px;margin:0 auto;padding:26px 22px 80px}
+  .lede{color:var(--muted);font-size:14px;margin:0 0 20px}
+
+  /* ---- the decision bench ---- */
+  .item{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    margin-bottom:16px;overflow:hidden}
+  .item.is-open{border-color:#C9CEE4;box-shadow:0 1px 3px rgba(30,58,138,.07)}
+  .head{display:flex;gap:16px;align-items:flex-start;padding:16px 18px;cursor:pointer}
+  .score{
+    flex:0 0 auto;width:52px;height:52px;border-radius:10px;display:grid;place-items:center;
+    background:var(--lapis-soft);color:var(--lapis);font-weight:900;font-size:19px
+  }
+  .score.below{background:#F1F1EE;color:var(--muted)}
+  .score.rej{background:#F7EDEA;color:var(--clay)}
+  .title{font-weight:700;font-size:16.5px;margin:0 0 5px;line-height:1.5}
+  .facts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+  .cost{color:#7A5B10;background:var(--saffron-soft);border-radius:5px;padding:1px 8px;font-weight:700}
+  .why{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .why span{font-size:12px;background:var(--paper);border:1px solid var(--line);
+    border-radius:6px;padding:2px 9px;color:#4C5058}
+
+  .body{display:none;border-top:1px solid var(--line)}
+  .item.is-open .body{display:grid;grid-template-columns:1fr 1fr}
+  .pane{padding:18px}
+  .pane + .pane{border-inline-start:1px solid var(--line)}
+  .pane h3{margin:0 0 10px;font-size:12px;letter-spacing:.09em;color:var(--muted);font-weight:700}
+  .brief{white-space:pre-wrap;font-size:14.5px;color:#33363D;max-height:260px;overflow:auto}
+  textarea{
+    width:100%;min-height:170px;font:inherit;font-size:15px;line-height:1.8;
+    padding:13px;border:1px solid var(--line);border-radius:9px;background:var(--paper);
+    resize:vertical;color:var(--ink)
+  }
+  textarea:focus{outline:2px solid var(--lapis);outline-offset:1px;background:var(--card)}
+  .verdict{margin-top:10px;font-size:13px;min-height:22px}
+  .verdict .bad{color:var(--clay)} .verdict .good{color:var(--ok)}
+  .verdict ul{margin:5px 0 0;padding-inline-start:18px}
+  .actions{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+  button.act{font:inherit;font-size:14px;font-weight:700;border-radius:8px;
+    padding:9px 18px;cursor:pointer;border:1px solid transparent}
+  .send{background:var(--lapis);color:#fff}
+  .send:disabled{background:#C3C7D6;cursor:not-allowed}
+  .skip{background:var(--card);border-color:var(--line);color:var(--muted)}
+  .skip:hover{border-color:var(--clay);color:var(--clay)}
+
+  /* ---- settings ---- */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:22px;max-width:660px}
+  .panel h2{margin:0 0 4px;font-size:17px}
+  .panel p{margin:0 0 16px;color:var(--muted);font-size:14px}
+  .field{display:flex;gap:9px;flex-wrap:wrap}
+  input[type=password],input[type=text]{
+    flex:1;min-width:250px;font:inherit;padding:10px 13px;border:1px solid var(--line);
+    border-radius:8px;background:var(--paper);direction:ltr;text-align:left;
+    font-family:var(--mono);font-size:13px
+  }
+  input:focus{outline:2px solid var(--lapis);outline-offset:1px;background:var(--card)}
+  .state{margin-top:14px;padding:11px 14px;border-radius:8px;font-size:13.5px;display:none}
+  .state.on{display:block}
+  .state.ok{background:#EDF4EF;color:var(--ok)}
+  .state.err{background:#F9EEEB;color:var(--clay)}
+  .note{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:13px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .empty{text-align:center;padding:70px 20px;color:var(--muted)}
+  .empty code{background:var(--card);border:1px solid var(--line);border-radius:6px;
+    padding:2px 8px;font-family:var(--mono);font-size:13px;direction:ltr;display:inline-block}
+  [hidden]{display:none!important}
+  @media (max-width:820px){ .item.is-open .body{grid-template-columns:1fr}
+    .pane + .pane{border-inline-start:0;border-top:1px solid var(--line)} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="wordmark">کار<span>یاب</span></div>
+    <div class="meter" id="meter" title="هزینه‌ی ژتونیِ کاندیداهای صف">
+      <span class="label">ژتون صف</span>
+      <span class="track"><span class="fill" id="meterFill" style="width:0%"></span></span>
+      <span class="label num" id="meterText">0 / 0</span>
+    </div>
+    <nav>
+      <button id="tabQueue" aria-current="true">صف بررسی</button>
+      <button id="tabSettings">تنظیمات</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section id="viewQueue">
+    <p class="lede" id="queueLede">در حال بارگذاری…</p>
+    <div id="list"></div>
+  </section>
+
+  <section id="viewSettings" hidden>
+    <div class="panel">
+      <h2>کلید API انتخاب‌شده</h2>
+      <p>برای نوشتن پیشنهادها به کلید Anthropic نیاز است. کلید فقط روی همین دستگاه
+         ذخیره می‌شود، با دسترسی ۰۶۰۰، و هرگز جایی جز خود Anthropic فرستاده نمی‌شود.</p>
+      <div class="field">
+        <input id="keyInput" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <button class="act send" id="keySave">ذخیره</button>
+        <button class="act skip" id="keyTest">آزمایش</button>
+        <button class="act skip" id="keyClear">حذف</button>
+      </div>
+      <div class="state" id="keyState"></div>
+      <div class="note">
+        وضعیت فعلی: <b class="num" id="keyMask">—</b><br>
+        کلید را از <span class="num">console.anthropic.com</span> بردارید.
+        این صفحه فقط روی <span class="num">127.0.0.1</span> اجرا می‌شود و رمز ورود ندارد؛
+        اگر آن را روی شبکه باز کنید، هرکسی روی همان شبکه می‌تواند از اعتبار شما خرج کند.
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const fa = (n) => Number(n).toLocaleString('fa-IR');
+const toman = (n) => n ? fa(n) : '؟';
+
+function tab(which){
+  const q = which === 'queue';
+  $('#viewQueue').hidden = !q; $('#viewSettings').hidden = q;
+  $('#tabQueue').setAttribute('aria-current', String(q));
+  $('#tabSettings').setAttribute('aria-current', String(!q));
+  if (!q) loadSettings();
+}
+$('#tabQueue').onclick = () => tab('queue');
+$('#tabSettings').onclick = () => tab('settings');
+
+async function loadQueue(){
+  const r = await fetch('/api/queue?limit=40');
+  const d = await r.json();
+  const items = d.items || [];
+  const cap = d.daily_cap || 0;
+  const queued = d.queued_tokens || 0;
+  $('#meterFill').style.width = cap ? Math.min(100, queued/cap*100) + '%' : '0%';
+  $('#meterText').textContent = `${fa(queued)} / ${fa(cap)}`;
+  $('#meter').title = `ارسال ${fa(d.candidate_count||0)} کاندیدای صف، ${fa(queued)} ژتون خرج می‌کند`;
+
+  if (!items.length){
+    $('#queueLede').textContent = '';
+    $('#list').innerHTML = `<div class="empty">
+      <p>هنوز چیزی در صف نیست.</p>
+      <p><code>karyab scan --pages 2</code> را اجرا کنید تا پروژه‌ها بیایند.</p></div>`;
+    return;
+  }
+  const over = items.filter(i => i.value >= d.threshold).length;
+  $('#queueLede').textContent =
+    `${fa(items.length)} پروژه بررسی شد، ${fa(over)} تا از آستانه‌ی ${fa(d.threshold)} گذشت.`;
+
+  $('#list').innerHTML = items.map((it, i) => {
+    const cls = it.rejected ? 'rej' : (it.value >= d.threshold ? '' : 'below');
+    const why = (it.reasons || []).slice(0, 4)
+      .map(r => `<span>${esc(r)}</span>`).join('');
+    return `<article class="item" data-i="${i}">
+      <div class="head">
+        <div class="score ${cls} num">${fa(Math.round(it.value))}</div>
+        <div style="flex:1;min-width:0">
+          <h2 class="title">${esc(it.title)}</h2>
+          <div class="facts">
+            <span class="num">${toman(it.min_budget)}–${toman(it.max_budget)} تومان</span>
+            <span class="cost num">${fa(it.token)} ژتون</span>
+            <a href="https://www.karlancer.com/projects/${encodeURI(it.slug)}"
+               target="_blank" rel="noopener">دیدن آگهی</a>
+          </div>
+          <div class="why">${why}</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="pane">
+          <h3>پیش‌نویس شما</h3>
+          <textarea data-draft="${i}" placeholder="هنوز پیش‌نویسی ساخته نشده. اینجا بنویسید تا بررسی شود."></textarea>
+          <div class="verdict" data-verdict="${i}"></div>
+          <div class="actions">
+            <button class="act send" data-send="${i}" disabled>ارسال پیشنهاد</button>
+            <button class="act skip" data-skip="${i}">رد کردن</button>
+          </div>
+        </div>
+        <div class="pane">
+          <h3>شرح کارفرما</h3>
+          <div class="brief">${esc(it.description || "کارفرما شرحی ننوشته است.")}</div>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+
+  document.querySelectorAll('.head').forEach(h => {
+    h.onclick = () => h.closest('.item').classList.toggle('is-open');
+  });
+  document.querySelectorAll('[data-draft]').forEach(t => {
+    let timer; t.oninput = () => { clearTimeout(timer); timer = setTimeout(() => check(t), 400); };
+  });
+  document.querySelectorAll('[data-skip]').forEach(b => {
+    b.onclick = () => b.closest('.item').remove();
+  });
+}
+
+async function check(area){
+  const i = area.dataset.draft;
+  const box = document.querySelector(`[data-verdict="${i}"]`);
+  const send = document.querySelector(`[data-send="${i}"]`);
+  if (!area.value.trim()){ box.innerHTML = ''; send.disabled = true; return; }
+  const r = await fetch('/api/check', {method:'POST', headers:{'Content-Type':'application/json'},
+                                       body: JSON.stringify({text: area.value})});
+  const d = await r.json();
+  const blocking = d.blocking || [];
+  const a = d.assessment || {};
+  send.disabled = blocking.length > 0;
+  if (blocking.length){
+    box.innerHTML = `<div class="bad"><b>باید اصلاح شود:</b><ul>` +
+      blocking.map(v => `<li>${esc(v.message)}</li>`).join('') + `</ul></div>`;
+  } else {
+    const w = (a.weaknesses || []).map(x => `<li>${esc(x)}</li>`).join('');
+    box.innerHTML = `<div class="good">امتیاز <b class="num">${fa(a.score)}</b> از ۱۰۰ ` +
+      `(${fa(a.word_count)} کلمه؛ میانه‌ی پیشنهادهای برنده ۳۲ کلمه)</div>` +
+      (w ? `<ul style="color:var(--muted)">${w}</ul>` : '');
+  }
+}
+
+async function loadSettings(){
+  const d = await (await fetch('/api/settings')).json();
+  $('#keyMask').textContent = d.api_key_masked;
+}
+function say(msg, ok){
+  const el = $('#keyState');
+  el.className = 'state on ' + (ok ? 'ok' : 'err');
+  el.textContent = msg;
+}
+$('#keySave').onclick = async () => {
+  const key = $('#keyInput').value.trim();
+  if (!key) return say('کلید را وارد کنید.', false);
+  const r = await fetch('/api/settings/api-key', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({key})});
+  const d = await r.json();
+  if (!r.ok) return say(d.detail || 'ذخیره نشد.', false);
+  $('#keyInput').value = ''; $('#keyMask').textContent = d.api_key_masked;
+  say('ذخیره شد.', true);
+};
+$('#keyTest').onclick = async () => {
+  say('در حال آزمایش…', true);
+  const r = await fetch('/api/settings/api-key/test', {method:'POST'});
+  const d = await r.json().catch(() => ({}));
+  say(r.ok ? 'کلید کار می‌کند.' : (d.detail || 'کلید کار نکرد.'), r.ok);
+};
+$('#keyClear').onclick = async () => {
+  const d = await (await fetch('/api/settings/api-key', {method:'DELETE'})).json();
+  $('#keyMask').textContent = d.api_key_masked;
+  say('کلید حذف شد.', true);
+};
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+loadQueue();
+</script>
+</body>
+</html>

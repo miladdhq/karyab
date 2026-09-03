@@ -260,6 +260,14 @@ def cmd_voice(args) -> int:
     return 0
 
 
+def cmd_review(args) -> int:
+    """Open the local review dashboard."""
+    from .web.app import serve
+
+    serve(args.db, host=args.host, port=args.port, allow_remote=args.i_know)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     # `--config` and `--db` must work both before AND after the subcommand
     # (`karyab --config X scan` and `karyab scan --config X`), because users
@@ -340,6 +348,16 @@ def main(argv: list[str] | None = None) -> int:
                          help="comma-separated terms to rank examples against")
     p_voice.add_argument("--limit", type=int, default=3)
     p_voice.set_defaults(func=cmd_voice)
+
+    p_review = sub.add_parser(
+        "review", parents=[sub_shared],
+        help="open the local review dashboard in a browser")
+    p_review.add_argument("--host", default="127.0.0.1")
+    p_review.add_argument("--port", type=int, default=8765)
+    p_review.add_argument("--i-know", action="store_true",
+                          help="allow binding to a non-loopback address "
+                               "(no auth; anyone on the network can spend your API credit)")
+    p_review.set_defaults(func=cmd_review)
 
     args = parser.parse_args(argv)
     return args.func(args)
