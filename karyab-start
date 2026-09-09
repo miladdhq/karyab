@@ -23,6 +23,11 @@ PY
 }
 
 if is_up; then
+  # Adopt it, so karyab-stop can find a server this script did not start.
+  if command -v ss >/dev/null 2>&1; then
+    ss -tlnpH "sport = :$PORT" 2>/dev/null |
+      grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2 > "$PIDFILE" 2>/dev/null || true
+  fi
   echo "karyab is already running."
 else
   echo "Starting karyab..."

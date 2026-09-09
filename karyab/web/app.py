@@ -49,6 +49,15 @@ def is_loopback(host: str) -> bool:
         return False
 
 
+def today_spend(db_path: str) -> dict:
+    """Bids sent in the last 24 hours. The daily cap is a rolling window, not
+    a calendar day — a cap that resets at midnight invites a 23:59 spree."""
+    from datetime import datetime, timedelta, timezone
+
+    with Store(db_path) as store:
+        return store.spend_since(datetime.now(timezone.utc) - timedelta(hours=24))
+
+
 def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
     app = FastAPI(title="karyab", docs_url=None, redoc_url=None)
     cfg_path = Path(config_path) if config_path else default_config_path()
@@ -72,19 +81,42 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
             item["draft"] = draft["text"] if draft else ""
             item["draft_source"] = draft["source"] if draft else ""
 
-        # Nothing is submitted until Phase 4, so there is no spend to report
-        # yet. The meter shows what the queue would COST if every candidate
-        # above the threshold were sent — which is the decision actually in
-        # front of the user — rather than a zero dressed up as a number.
         candidates = [r for r in items
                       if not r["rejected"] and r["value"] >= cfg.threshold]
+        # Real spend, now that applications are recorded: what has actually
+        # been sent in the last 24 hours against the daily cap.
+        from datetime import datetime, timedelta, timezone
+        spent = today_spend(db_path)
         return {
             "threshold": cfg.threshold,
             "daily_cap": cfg.daily_cap,
             "items": items,
             "queued_tokens": sum(r["token"] for r in candidates),
             "candidate_count": len(candidates),
+            "sent_today": spent["count"],
+            "tokens_today": spent["tokens"],
         }
+
+    @app.get("/api/applied")
+    def applied(limit: int = 200):
+        with Store(db_path) as store:
+            rows = store.applied(limit=limit)
+        return {"items": rows,
+                "total_tokens": sum(r["token"] for r in rows)}
+
+    @app.post("/api/applied/{project_id}")
+    def mark(project_id: int):
+        from datetime import datetime, timezone
+
+        with Store(db_path) as store:
+            store.mark_applied(project_id, datetime.now(timezone.utc))
+        return {"applied": True}
+
+    @app.delete("/api/applied/{project_id}")
+    def unmark(project_id: int):
+        with Store(db_path) as store:
+            store.unmark_applied(project_id)
+        return {"applied": False}
 
     @app.get("/api/voice")
     def voice(skills: str = "", limit: int = 3):

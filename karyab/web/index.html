@@ -88,6 +88,13 @@
   .send:disabled{background:#C3C7D6;cursor:not-allowed}
   .skip{background:var(--card);border-color:var(--line);color:var(--muted)}
   .skip:hover{border-color:var(--clay);color:var(--clay)}
+  .done{background:var(--saffron-soft);border-color:#EFE0BC;color:#7A5B10}
+  .done:hover{background:var(--saffron);color:#fff;border-color:var(--saffron)}
+  .applied-row{background:var(--card);border:1px solid var(--line);border-radius:11px;
+    padding:14px 17px;margin-bottom:11px;display:flex;gap:15px;align-items:flex-start}
+  .applied-row .when{flex:0 0 auto;font-size:12.5px;color:var(--muted);min-width:96px}
+  .applied-row .sent{font-size:14px;color:#33363D;margin-top:6px;white-space:pre-wrap}
+  .applied-row .cost{flex:0 0 auto}
 
   /* ---- settings ---- */
   .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;
@@ -142,6 +149,7 @@
     </div>
     <nav>
       <button id="tabQueue" aria-current="true">صف بررسی</button>
+      <button id="tabApplied">ارسال‌شده‌ها</button>
       <button id="tabSettings">تنظیمات</button>
     </nav>
   </div>
@@ -157,6 +165,11 @@
     </div>
     <p class="lede" id="queueLede">در حال بارگذاری…</p>
     <div id="list"></div>
+  </section>
+
+  <section id="viewApplied" hidden>
+    <p class="lede" id="appliedLede">در حال بارگذاری…</p>
+    <div id="appliedList"></div>
   </section>
 
   <section id="viewSettings" hidden>
@@ -187,13 +200,18 @@ const fa = (n) => Number(n).toLocaleString('fa-IR');
 const toman = (n) => n ? fa(n) : '؟';
 
 function tab(which){
-  const q = which === 'queue';
-  $('#viewQueue').hidden = !q; $('#viewSettings').hidden = q;
-  $('#tabQueue').setAttribute('aria-current', String(q));
-  $('#tabSettings').setAttribute('aria-current', String(!q));
-  if (!q) loadSettings();
+  for (const [name, view, btn] of [['queue','#viewQueue','#tabQueue'],
+                                   ['applied','#viewApplied','#tabApplied'],
+                                   ['settings','#viewSettings','#tabSettings']]){
+    const on = which === name;
+    $(view).hidden = !on;
+    $(btn).setAttribute('aria-current', String(on));
+  }
+  if (which === 'settings') loadSettings();
+  if (which === 'applied') loadApplied();
 }
-$('#tabQueue').onclick = () => tab('queue');
+$('#tabQueue').onclick = () => { tab('queue'); loadQueue(); };
+$('#tabApplied').onclick = () => tab('applied');
 $('#tabSettings').onclick = () => tab('settings');
 
 async function loadQueue(){
@@ -203,13 +221,14 @@ async function loadQueue(){
   // The cap counts PROPOSALS per day; the token figure is the cost of
   // sending them. Comparing the two directly would be nonsense, so the bar
   // tracks candidates against the cap and the tokens are stated beside it.
+  // Real spend: what was actually sent in the last 24 hours, against the cap.
   const cap = d.daily_cap || 0;
-  const n = d.candidate_count || 0;
-  const queued = d.queued_tokens || 0;
-  $('#meterFill').style.width = cap ? Math.min(100, n/cap*100) + '%' : '0%';
-  $('#meterText').textContent = `${fa(n)} / ${fa(cap)} پیشنهاد · ${fa(queued)} ژتون`;
-  $('#meter').title =
-    `${fa(n)} کاندیدا از سقف روزانه‌ی ${fa(cap)} تا؛ ارسال همه ${fa(queued)} ژتون خرج می‌کند`;
+  const sent = d.sent_today || 0;
+  const spent = d.tokens_today || 0;
+  $('#meterFill').style.width = cap ? Math.min(100, sent/cap*100) + '%' : '0%';
+  $('#meterText').textContent = `${fa(sent)} / ${fa(cap)} امروز · ${fa(spent)} ژتون`;
+  $('#meter').title = `در ۲۴ ساعت گذشته ${fa(sent)} پیشنهاد فرستادید (${fa(spent)} ژتون). ` +
+    `${fa(d.candidate_count||0)} کاندیدا در صف است.`;
 
   if (!items.length){
     $('#queueLede').textContent = '';
@@ -246,7 +265,8 @@ async function loadQueue(){
           <textarea data-draft="${i}" placeholder="هنوز پیش‌نویسی ساخته نشده. اینجا بنویسید تا بررسی شود.">${esc(it.draft || "")}</textarea>
           <div class="verdict" data-verdict="${i}"></div>
           <div class="actions">
-            <button class="act send" data-send="${i}" disabled>باز کردن آگهی و ارسال</button>
+            <button class="act send" data-send="${i}" disabled>باز کردن آگهی</button>
+            <button class="act done" data-applied="${it.project_id}">ارسال شد</button>
             <button class="tiny" data-brief="${it.project_id}">گرفتن بریف برای Claude</button>
             <button class="act skip" data-skip="${i}">رد کردن</button>
             <span class="saved" data-saved="${i}">ذخیره شد</span>
@@ -280,6 +300,14 @@ async function loadQueue(){
     b.onclick = () => {
       const it = items[b.dataset.send];
       window.open('https://www.karlancer.com/projects/' + encodeURI(it.slug), '_blank');
+    };
+  });
+  document.querySelectorAll('[data-applied]').forEach(b => {
+    b.onclick = async () => {
+      await fetch('/api/applied/' + b.dataset.applied, {method:'POST'});
+      const card = b.closest('.item');
+      card.style.opacity = '.35';
+      setTimeout(() => { card.remove(); loadQueue(); }, 260);
     };
   });
   document.querySelectorAll('[data-brief]').forEach(b => {
@@ -326,6 +354,49 @@ async function check(area){
       `(${fa(a.word_count)} کلمه؛ میانه‌ی پیشنهادهای برنده ۳۲ کلمه)</div>` +
       (w ? `<ul style="color:var(--muted)">${w}</ul>` : '');
   }
+}
+
+async function loadApplied(){
+  const d = await (await fetch('/api/applied')).json();
+  const items = d.items || [];
+  if (!items.length){
+    $('#appliedLede').textContent = '';
+    $('#appliedList').innerHTML =
+      `<div class="empty"><p>هنوز پیشنهادی ارسال نکرده‌اید.</p>
+       <p>وقتی پیشنهادی فرستادید، در صف بررسی روی «ارسال شد» بزنید تا اینجا بیاید.</p></div>`;
+    return;
+  }
+  $('#appliedLede').textContent =
+    `${fa(items.length)} پیشنهاد ارسال‌شده · مجموعا ${fa(d.total_tokens)} ژتون`;
+  $('#appliedList').innerHTML = items.map(it => `
+    <div class="applied-row">
+      <div class="when num">${when(it.applied_at)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="title" style="font-size:15px">${esc(it.title)}</div>
+        <div class="facts">
+          <span class="num">${toman(it.min_budget)}–${toman(it.max_budget)} تومان</span>
+          <a href="https://www.karlancer.com/projects/${encodeURI(it.slug)}"
+             target="_blank" rel="noopener">دیدن آگهی</a>
+          <button class="tiny" data-unapply="${it.project_id}">برگرداندن به صف</button>
+        </div>
+        ${it.draft ? `<div class="sent">${esc(it.draft)}</div>` : ''}
+      </div>
+      <div class="cost"><span class="cost num">${fa(it.token)} ژتون</span></div>
+    </div>`).join('');
+  document.querySelectorAll('[data-unapply]').forEach(b => {
+    b.onclick = async () => {
+      await fetch('/api/applied/' + b.dataset.unapply, {method:'DELETE'});
+      loadApplied();
+    };
+  });
+}
+
+function when(iso){
+  if (!iso) return '';
+  const d = new Date(iso), mins = Math.round((Date.now() - d) / 60000);
+  if (mins < 60) return `${fa(mins)} دقیقه پیش`;
+  if (mins < 1440) return `${fa(Math.round(mins/60))} ساعت پیش`;
+  return `${fa(Math.round(mins/1440))} روز پیش`;
 }
 
 async function loadSettings(){

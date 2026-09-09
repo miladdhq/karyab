@@ -69,6 +69,19 @@ CREATE TABLE IF NOT EXISTS voice_samples (
 
 CREATE INDEX IF NOT EXISTS voice_by_outcome ON voice_samples(outcome, is_opening_pitch);
 
+-- Projects a bid was actually sent on. Recorded separately from `drafts`
+-- because a draft is work in progress and an application is a spend: it
+-- costs tokens, it cannot be taken back on Karlancer's side, and it is the
+-- only honest basis for reporting what the tool has cost.
+CREATE TABLE IF NOT EXISTS applied (
+    project_id  INTEGER PRIMARY KEY,
+    applied_at  TEXT    NOT NULL,
+    token       INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (project_id) REFERENCES projects(id)
+);
+
+CREATE INDEX IF NOT EXISTS applied_by_date ON applied(applied_at DESC);
+
 -- Proposals drafted for a project but not yet sent. One per project: a
 -- redraft replaces the previous attempt rather than piling up.
 CREATE TABLE IF NOT EXISTS drafts (
@@ -194,6 +207,7 @@ class Store:
                    p.token, p.category_id, p.first_seen_at
             FROM scores s
             JOIN projects p ON p.id = s.project_id
+            WHERE s.project_id NOT IN (SELECT project_id FROM applied)
             ORDER BY s.value DESC, s.scored_at DESC
             LIMIT ?
             """,
@@ -357,3 +371,63 @@ class Store:
             }
             for r in rows
         }
+
+    # ---- applications ------------------------------------------------------
+
+    def mark_applied(self, project_id: int, now: datetime) -> None:
+        """Record that a bid was sent, freezing its token cost at that moment.
+
+        The token cost is copied from the project rather than joined at read
+        time: Karlancer can re-price a listing, but what the bid actually cost
+        is fixed once it is sent.
+
+        Marking an already-applied project is a no-op — the first application
+        is the real one, and moving the timestamp would corrupt spend reports.
+        """
+        row = self._db.execute(
+            "SELECT token FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+        if row is None:
+            return  # nothing known about this project; nothing to record
+
+        self._db.execute(
+            """
+            INSERT INTO applied (project_id, applied_at, token)
+            VALUES (?, ?, ?)
+            ON CONFLICT(project_id) DO NOTHING
+            """,
+            (project_id, now.isoformat(), row["token"]),
+        )
+        self._db.commit()
+
+    def unmark_applied(self, project_id: int) -> None:
+        """Undo a mistaken mark. Without this a misclick hides a project forever."""
+        self._db.execute("DELETE FROM applied WHERE project_id = ?", (project_id,))
+        self._db.commit()
+
+    def applied(self, limit: int = 200) -> list[dict]:
+        rows = self._db.execute(
+            """
+            SELECT a.project_id, a.applied_at, a.token,
+                   p.title, p.slug, p.min_budget, p.max_budget, p.category_id,
+                   COALESCE(d.text, '') AS draft
+            FROM applied a
+            JOIN projects p ON p.id = a.project_id
+            LEFT JOIN drafts d ON d.project_id = a.project_id
+            ORDER BY a.applied_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    def spend_since(self, since: datetime) -> dict:
+        """What has actually been spent since a moment, in bids and tokens."""
+        row = self._db.execute(
+            """
+            SELECT COUNT(*) AS count, COALESCE(SUM(token), 0) AS tokens
+            FROM applied WHERE applied_at >= ?
+            """,
+            (since.isoformat(),),
+        ).fetchone()
+        return {"count": row["count"], "tokens": row["tokens"]}

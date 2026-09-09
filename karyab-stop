@@ -1,18 +1,43 @@
 #!/usr/bin/env bash
-# Stop the karyab server. Uses the pidfile written by karyab-start, so it
-# cannot match — and kill — an unrelated process that merely mentions karyab.
+# Stop the karyab server.
+#
+# Looks for the pidfile first, then falls back to whoever is actually
+# listening on the port. The fallback matters: a server started by hand (or
+# left over from a crash) has no pidfile, and without this it could never be
+# stopped — so `karyab-start` would keep reporting "already running" and
+# serving stale code.
+#
+# It matches by listening socket, never by command-line text: an earlier
+# version used `pkill -f karyab.cli`, which matched and killed the shell that
+# invoked it.
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PORT="${KARYAB_PORT:-8765}"
 PIDFILE="$HERE/.karyab.pid"
 
-if [ ! -f "$PIDFILE" ]; then
-  echo "karyab does not appear to be running (no pidfile)."
+port_pid() {
+  if command -v ss >/dev/null 2>&1; then
+    ss -tlnpH "sport = :$PORT" 2>/dev/null |
+      grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2
+  elif command -v lsof >/dev/null 2>&1; then
+    lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | head -1
+  fi
+}
+
+PID=""
+[ -f "$PIDFILE" ] && PID="$(cat "$PIDFILE" 2>/dev/null)"
+if [ -z "${PID:-}" ] || ! kill -0 "$PID" 2>/dev/null; then
+  PID="$(port_pid)"
+fi
+
+if [ -z "${PID:-}" ]; then
+  echo "karyab is not running."
+  rm -f "$PIDFILE"
   exit 0
 fi
-PID="$(cat "$PIDFILE")"
-if kill -0 "$PID" 2>/dev/null; then
-  kill "$PID" && echo "karyab stopped."
-else
-  echo "karyab was not running."
-fi
+
+kill "$PID" 2>/dev/null
+for _ in $(seq 1 20); do kill -0 "$PID" 2>/dev/null || break; sleep 0.1; done
+kill -0 "$PID" 2>/dev/null && kill -9 "$PID" 2>/dev/null
 rm -f "$PIDFILE"
+echo "karyab stopped."

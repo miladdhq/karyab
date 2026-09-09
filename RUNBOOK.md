@@ -34,16 +34,34 @@ Claude and ask for the proposal. Paste the answer back into the draft box.
 history. A red list means it must be fixed. A score means it is sendable —
 higher is closer to what has actually won for you.
 
-**باز کردن آگهی و ارسال** — opens the project on karlancer.com. Paste your
-draft there and send it yourself. karyab never submits for you.
+**باز کردن آگهی** — opens the project on karlancer.com. Paste your draft
+there and send it yourself. karyab never submits for you.
+
+**ارسال شد** — press this *after* you have actually sent the bid. The project
+leaves the queue, moves to **ارسال‌شده‌ها**, and its token cost counts against
+your daily meter. Opening the ad does not mark anything: looking is not
+bidding, and auto-marking would quietly hide projects you decided against.
+
+Marked something by mistake? Open **ارسال‌شده‌ها** and press
+**برگرداندن به صف**.
 
 **به‌روزرسانی سوابق** — re-reads your bid history so the voice examples stay
 current. Worth doing once a month, or after you win something.
 
+## The tabs
+
+**صف بررسی** — projects worth a look that you have not bid on yet.
+
+**ارسال‌شده‌ها** — everything you have sent, newest first, with what it cost
+and the exact text you sent. Useful a week later when a client replies and
+you need to remember what you promised.
+
 ## The meter
 
-`۶ / ۸ پیشنهاد · ۲۹ ژتون` means six candidates against a daily cap of eight,
-and sending all six would cost 29 tokens. The cap is yours to change.
+`۱ / ۸ امروز · ۷ ژتون` means one bid sent in the last 24 hours against a cap
+of eight, costing 7 tokens. It is a rolling 24 hours, not a calendar day — a
+cap that resets at midnight just invites a 23:59 spree. The cap is yours to
+change in the config.
 
 ## Tuning what gets surfaced
 
