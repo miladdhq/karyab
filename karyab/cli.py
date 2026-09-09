@@ -22,6 +22,21 @@ from .vocab import build_vocabulary, to_toml
 
 # The brief's original path, https://www.karlancer.com/project/{slug}, 404s.
 # Verified live: /projects/{slug} (plural) returns 200.
+def matched_terms(reasons) -> tuple[str, ...]:
+    """Pull the skill terms back out of a scorer reason line.
+
+    The scorer records why it matched as "skill match: bot, telegram bot".
+    Voice examples are chosen by overlap with those terms, so they have to be
+    recovered rather than passing the whole sentence as a search key.
+    """
+    terms: list[str] = []
+    for reason in reasons:
+        text = str(reason)
+        if text.startswith("skill match:"):
+            terms += [t.strip() for t in text.split(":", 1)[1].split(",") if t.strip()]
+    return tuple(terms)
+
+
 PROJECT_URL = "https://www.karlancer.com/projects/{slug}"
 
 
@@ -268,6 +283,102 @@ def cmd_review(args) -> int:
     return 0
 
 
+def cmd_brief(args) -> int:
+    """Export the queue's candidates as writing briefs.
+
+    This is the no-API path: karyab writes out everything a writer needs, a
+    person or a Claude session writes the drafts into the same file, and
+    `karyab drafts` reads them back. Costs nothing and needs no key.
+    """
+    import json as _json
+
+    from .writer.prompt import build_brief
+
+    config = _load_config(Path(args.config))
+    with Store(args.db) as store:
+        rows = store.top_scores(limit=args.limit)
+        candidates = [r for r in rows
+                      if not r["rejected"] and r["value"] >= config.threshold]
+        if args.all:
+            candidates = [r for r in rows if not r["rejected"]][:args.limit]
+
+        corpus = store.voice_stats()
+        bundle = []
+        for row in candidates[:args.max]:
+            voice = store.teachable_samples(
+                match_skills=matched_terms(row.get("reasons") or ()), limit=3)
+            bundle.append({
+                "project_id": row["project_id"],
+                "title": row["title"],
+                "score": row["value"],
+                "token_cost": row["token"],
+                "url": PROJECT_URL.format(slug=row["slug"]),
+                "brief": build_brief(row, voice),
+                "text": "",
+            })
+
+    if not bundle:
+        print(f"Nothing at or above the threshold of {config.threshold}. "
+              f"Use --all to brief every non-rejected project.")
+        return 0
+
+    if not corpus["teachable"]:
+        print("WARNING: no voice corpus in this database, so the briefs carry no",
+              file=sys.stderr)
+        print("         examples of how you actually write. Run `karyab harvest`",
+              file=sys.stderr)
+        print("         against the SAME --db first; drafts will read generic without it.",
+              file=sys.stderr)
+
+    out = Path(args.out)
+    out.write_text(_json.dumps({"drafts": bundle}, ensure_ascii=False, indent=1),
+                   encoding="utf-8")
+    total = sum(b["token_cost"] for b in bundle)
+    print(f"Wrote {len(bundle)} brief(s) to {out} — {total} tokens if all are sent.")
+    print("Fill in each \"text\" field, then run: karyab drafts " + str(out))
+    return 0
+
+
+def cmd_drafts(args) -> int:
+    """Read written drafts back in, checking each against the gate."""
+    import json as _json
+
+    from .writer.prompt import parse_drafts
+    from .writer.rules import assess, validate
+
+    try:
+        bundle = _json.loads(Path(args.file).read_text(encoding="utf-8"))
+        texts = parse_drafts(bundle)
+    except FileNotFoundError:
+        print(f"No such file: {args.file}", file=sys.stderr)
+        return 1
+    except ValueError as exc:
+        print(f"That file is not a draft bundle: {exc}", file=sys.stderr)
+        return 1
+
+    if not texts:
+        print("No drafts filled in yet — every \"text\" field is empty.")
+        return 0
+
+    now = datetime.now(timezone.utc)
+    stored = blocked = 0
+    with Store(args.db) as store:
+        for project_id, text in texts.items():
+            problems = validate(text)
+            a = assess(text)
+            store.save_draft(project_id, text, now, source=args.source,
+                             score=a.score, blocking=[v.code for v in problems])
+            stored += 1
+            if problems:
+                blocked += 1
+                print(f"  ! {project_id}: " +
+                      "; ".join(v.message for v in problems))
+
+    print(f"Stored {stored} draft(s); {blocked} need fixing before they can be sent.")
+    print("Review them in the dashboard: karyab review")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     # `--config` and `--db` must work both before AND after the subcommand
     # (`karyab --config X scan` and `karyab scan --config X`), because users
@@ -358,6 +469,24 @@ def main(argv: list[str] | None = None) -> int:
                           help="allow binding to a non-loopback address "
                                "(no auth; anyone on the network can spend your API credit)")
     p_review.set_defaults(func=cmd_review)
+
+    p_brief = sub.add_parser(
+        "brief", parents=[sub_shared],
+        help="export writing briefs for the queue (no API key needed)")
+    p_brief.add_argument("--out", default="drafts.json")
+    p_brief.add_argument("--max", type=int, default=8,
+                         help="most briefs to write (default: the daily cap)")
+    p_brief.add_argument("--limit", type=int, default=40)
+    p_brief.add_argument("--all", action="store_true",
+                         help="include projects below the threshold")
+    p_brief.set_defaults(func=cmd_brief)
+
+    p_drafts = sub.add_parser(
+        "drafts", parents=[sub_shared],
+        help="read written drafts back in and check them")
+    p_drafts.add_argument("file", nargs="?", default="drafts.json")
+    p_drafts.add_argument("--source", default="session")
+    p_drafts.set_defaults(func=cmd_drafts)
 
     args = parser.parse_args(argv)
     return args.func(args)

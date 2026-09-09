@@ -64,7 +64,13 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
         cfg = config()
         with Store(db_path) as store:
             rows = store.top_scores(limit=limit)
+            written = store.drafts()
         items = [r for r in rows if rejected or not r["rejected"]]
+        for item in items:
+            draft = written.get(item["project_id"])
+            item["draft"] = draft["text"] if draft else ""
+            item["draft_source"] = draft["source"] if draft else ""
+
         # Nothing is submitted until Phase 4, so there is no spend to report
         # yet. The meter shows what the queue would COST if every candidate
         # above the threshold were sent — which is the decision actually in

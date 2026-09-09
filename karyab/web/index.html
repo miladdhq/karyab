@@ -218,7 +218,7 @@ async function loadQueue(){
       <div class="body">
         <div class="pane">
           <h3>پیش‌نویس شما</h3>
-          <textarea data-draft="${i}" placeholder="هنوز پیش‌نویسی ساخته نشده. اینجا بنویسید تا بررسی شود."></textarea>
+          <textarea data-draft="${i}" placeholder="هنوز پیش‌نویسی ساخته نشده. اینجا بنویسید تا بررسی شود.">${esc(it.draft || "")}</textarea>
           <div class="verdict" data-verdict="${i}"></div>
           <div class="actions">
             <button class="act send" data-send="${i}" disabled>ارسال پیشنهاد</button>
@@ -238,6 +238,7 @@ async function loadQueue(){
   });
   document.querySelectorAll('[data-draft]').forEach(t => {
     let timer; t.oninput = () => { clearTimeout(timer); timer = setTimeout(() => check(t), 400); };
+    if (t.value.trim()) check(t);
   });
   document.querySelectorAll('[data-skip]').forEach(b => {
     b.onclick = () => b.closest('.item').remove();

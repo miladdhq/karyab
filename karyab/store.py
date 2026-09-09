@@ -68,6 +68,18 @@ CREATE TABLE IF NOT EXISTS voice_samples (
 );
 
 CREATE INDEX IF NOT EXISTS voice_by_outcome ON voice_samples(outcome, is_opening_pitch);
+
+-- Proposals drafted for a project but not yet sent. One per project: a
+-- redraft replaces the previous attempt rather than piling up.
+CREATE TABLE IF NOT EXISTS drafts (
+    project_id  INTEGER PRIMARY KEY,
+    text        TEXT    NOT NULL,
+    source      TEXT    NOT NULL DEFAULT 'session',
+    score       INTEGER NOT NULL DEFAULT 0,
+    blocking    TEXT    NOT NULL DEFAULT '[]',
+    written_at  TEXT    NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES projects(id)
+);
 """
 
 
@@ -313,4 +325,35 @@ class Store:
             "declined_pitches": len(declined),
             "median_won_words": median([r["word_count"] for r in teachable]),
             "median_declined_words": median([r["word_count"] for r in declined]),
+        }
+
+    # ---- drafts ------------------------------------------------------------
+
+    def save_draft(self, project_id: int, text: str, now: datetime,
+                   *, source: str = "session", score: int = 0,
+                   blocking: list[str] | None = None) -> None:
+        self._db.execute(
+            """
+            INSERT INTO drafts (project_id, text, source, score, blocking, written_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(project_id) DO UPDATE SET
+                text       = excluded.text,
+                source     = excluded.source,
+                score      = excluded.score,
+                blocking   = excluded.blocking,
+                written_at = excluded.written_at
+            """,
+            (project_id, text, source, int(score),
+             json.dumps(blocking or [], ensure_ascii=False), now.isoformat()),
+        )
+        self._db.commit()
+
+    def drafts(self) -> dict[int, dict]:
+        rows = self._db.execute("SELECT * FROM drafts").fetchall()
+        return {
+            r["project_id"]: {
+                "text": r["text"], "source": r["source"], "score": r["score"],
+                "blocking": json.loads(r["blocking"]), "written_at": r["written_at"],
+            }
+            for r in rows
         }
