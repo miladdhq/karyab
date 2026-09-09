@@ -1,50 +1,88 @@
-# Using karyab
+# کاریاب / karyab — how to use it
 
-Everything runs from `~/dev/karyab`. Prefix commands with `.venv/bin/python -m karyab.cli`,
-or add this to your shell once:
+## Open it
 
-    alias karyab='/home/milad/dev/karyab/.venv/bin/python -m karyab.cli'
+Double-click **کاریاب — Karyab** in your applications menu.
 
-## Daily use
+Or from a terminal:
 
-    karyab scan --pages 2      # find and score new projects (~1 min)
-    karyab review              # open http://127.0.0.1:8765 and read the queue
+    ~/dev/karyab/karyab-start
 
-That is the whole loop. `scan` is safe to run as often as you like — it only
-reads the public feed, and it never sends anything.
+Either way it opens **http://127.0.0.1:8765** in your browser. Running it
+twice is safe — it just opens the tab again.
 
-## Getting drafts written
+To stop it: `~/dev/karyab/karyab-stop`
 
-    karyab brief --out ~/karyab-drafts.json
+## What you do in the page
 
-This writes a briefing file: for each candidate, the client's own words plus
-the three winning proposals of yours closest to that job. Paste the file to
-Claude and ask for the `text` fields to be filled in, then:
+Everything. You do not need the terminal.
 
-    karyab drafts ~/karyab-drafts.json
+**جستجوی پروژه‌های تازه** — polls karlancer.com, scores every new project
+against the skills you have actually been paid for, and fills the queue.
+Takes about a minute. It only reads; nothing is ever sent.
 
-Drafts are checked against your own history and stored. Open `karyab review`
-to edit and copy them.
+**Each card** shows the score, the budget, what it costs in tokens, and the
+reasons behind the score. Click a card to open it: the client's brief on one
+side, your draft on the other.
 
-## Sending a bid
+**گرفتن بریف برای Claude** — copies a complete writing brief to your
+clipboard: the client's own words, the rules measured from your history, and
+the three winning proposals of yours closest to that job. Paste it into
+Claude and ask for the proposal. Paste the answer back into the draft box.
 
-karyab does not submit. Open the project link from the dashboard, paste the
-draft, and send it yourself. That keeps the account action yours.
+**The draft box** saves as you type and checks itself against your own
+history. A red list means it must be fixed. A score means it is sendable —
+higher is closer to what has actually won for you.
 
-## Tuning
+**باز کردن آگهی و ارسال** — opens the project on karlancer.com. Paste your
+draft there and send it yourself. karyab never submits for you.
 
-Config lives at `~/.config/karyab/config.toml`.
+**به‌روزرسانی سوابق** — re-reads your bid history so the voice examples stay
+current. Worth doing once a month, or after you win something.
 
-    threshold = 55        # lower it if the queue feels thin
-    daily_cap = 8         # proposals per day the meter budgets against
-    sweet_spot = [500000, 3500000]
+## The meter
 
-Scores are stored, so after editing the config just run `karyab report` — no
-re-scan needed. `karyab report --rejected` shows what was skipped and why,
-which is the fastest way to spot a missing skill term.
+`۶ / ۸ پیشنهاد · ۲۹ ژتون` means six candidates against a daily cap of eight,
+and sending all six would cost 29 tokens. The cap is yours to change.
 
-## Once a month
+## Tuning what gets surfaced
 
-    karyab harvest        # re-read your bid history; keeps the voice corpus current
+Edit `~/.config/karyab/config.toml`:
 
-If it says the session expired, run `karyab login` again.
+    threshold = 55        # lower it if the queue is too thin
+    daily_cap = 8         # proposals per day
+    min_budget = 500000   # ignore anything cheaper
+
+Then tick **نمایش ردشده‌ها** in the page to see what was skipped and why.
+That is the fastest way to spot a skill term that is missing from the
+`[skills]` table in the same file.
+
+Scores are stored, so changing the threshold takes effect on reload — no
+re-scan needed.
+
+## If something breaks
+
+**The page will not open** — check the log:
+
+    tail ~/dev/karyab/.karyab-server.log
+
+**"Not logged in" or "session no longer authenticates"** — your Karlancer
+session expired:
+
+    cd ~/dev/karyab && ./karyab-start   # stop it first if running
+    .venv/bin/karyab login
+
+A browser opens; log in as normal. karyab never sees your password.
+
+**Nothing found in a scan** — either the threshold is too high, or the feed
+genuinely has nothing in your categories right now. Tick نمایش ردشده‌ها to
+confirm which.
+
+## Command line, if you prefer it
+
+    cd ~/dev/karyab
+    .venv/bin/karyab scan --pages 2
+    .venv/bin/karyab report --rejected
+    .venv/bin/karyab brief --out ~/drafts.json
+    .venv/bin/karyab drafts ~/drafts.json
+    .venv/bin/karyab harvest
