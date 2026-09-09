@@ -243,6 +243,16 @@ function busy(on, msg) {
 // ---------- auto mode ----------
 function sheet(id, on) { $(id).classList.toggle('on', on); }
 
+// A checkbox's `checked` is ALREADY flipped by the browser when `click`
+// fires, so it reports the state the user is asking for, not the state
+// before. Reading it as "the current state" inverts the whole control:
+// clicking to turn auto ON reported true, which an earlier version treated
+// as "already on" and immediately turned it off again. Auto mode could
+// never be enabled.
+function autoToggleIntent(checkedAfterClick) {
+  return checkedAfterClick ? 'confirm_on' : 'turn_off';
+}
+
 async function setAuto(on) {
   await fetch('/api/auto/enable?on=' + on, { method: 'POST' });
   $('#autoOn').checked = on;
@@ -367,9 +377,12 @@ function boot() {
   };
 
   $('#autoOn').onclick = (e) => {
+    // The panel explains auto mode before anything starts, so the box must
+    // not appear ticked until the user has read it and agreed.
     e.preventDefault();
-    if ($('#autoOn').checked) setAuto(false);
-    else sheet('#autoInfo', true);
+    const intent = autoToggleIntent($('#autoOn').checked);
+    if (intent === 'confirm_on') sheet('#autoInfo', true);
+    else setAuto(false);
   };
   $('#autoCancel').onclick = () => sheet('#autoInfo', false);
   $('#autoStart').onclick = () => { sheet('#autoInfo', false); setAuto(true); };
