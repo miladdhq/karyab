@@ -53,3 +53,18 @@ def test_bearer_header_sets_accept_json():
 def test_bearer_header_never_double_prefixes():
     headers = bearer_header(("Bearer", "Bearer tok"))
     assert headers["Authorization"] == "Bearer tok"
+
+
+def test_the_auth_probe_requires_json_not_merely_200():
+    """Cookies alone return the Angular shell as HTTP 200 text/html.
+
+    An earlier probe treated that as authenticated, so an expired session
+    passed silently and every later call failed confusingly.
+    """
+    import inspect
+
+    from karyab.browser import session
+
+    src = inspect.getsource(session._context_is_authenticated)
+    assert "json" in src, "the probe must check the content type"
+    assert "bearer_header" in src, "the probe must send the bearer token"

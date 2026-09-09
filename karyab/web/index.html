@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>کاریاب</title>
 <style>
+  /* One variable face across 100-900. The system install registers each
+     weight as a separate family, so asking for weight 900 of "Vazirmatn"
+     silently gets a synthesised bold. */
+  @font-face{
+    font-family:"Vazirmatn";
+    src:url("/static/Vazirmatn-NL%5Bwght%5D.ttf") format("truetype-variations"),
+        url("/static/Vazirmatn-NL%5Bwght%5D.ttf") format("truetype");
+    font-weight:100 900; font-style:normal; font-display:swap;
+  }
   :root{
     /* Persian illumination, held back: lapis structures, saffron is reserved
        for the one thing that is genuinely scarce — bid tokens. */
@@ -18,7 +27,7 @@
   html,body{margin:0;padding:0}
   body{
     background:var(--paper); color:var(--ink);
-    font-family:"Vazirmatn UI FD","Vazirmatn FD",Vazirmatn,system-ui,sans-serif;
+    font-family:"Vazirmatn",system-ui,-apple-system,"Segoe UI",sans-serif;
     font-size:15px; line-height:1.75;
   }
   .num{font-family:var(--mono); font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:embed}
@@ -129,6 +138,29 @@
   .tiny:hover{border-color:var(--lapis);color:var(--lapis)}
   .saved{font-size:12.5px;color:var(--ok);opacity:0;transition:opacity .3s}
   .saved.on{opacity:1}
+  .autobtn{display:flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;
+    border:1px solid var(--line);cursor:pointer;font-size:13.5px;user-select:none;
+    background:var(--card);color:var(--muted);transition:all .2s}
+  .autobtn:hover{border-color:var(--lapis)}
+  .autobtn.on{background:var(--lapis);border-color:var(--lapis);color:#fff;font-weight:700}
+  .autobtn input{accent-color:var(--lapis);margin:0}
+
+  .sheet{position:fixed;inset:0;background:rgba(20,22,28,.45);display:none;
+    place-items:center;padding:22px;z-index:50}
+  .sheet.on{display:grid}
+  .sheet-card{background:var(--card);border-radius:15px;max-width:660px;width:100%;
+    max-height:88vh;overflow:auto;box-shadow:0 18px 50px rgba(20,22,28,.28)}
+  .sheet-head{padding:20px 24px 0}
+  .sheet-head h2{margin:0 0 4px;font-size:18px}
+  .sheet-head .facts{margin-bottom:4px}
+  .sheet-body{padding:16px 24px 22px}
+  .sheet-body h3{margin:16px 0 7px;font-size:12px;letter-spacing:.09em;
+    color:var(--muted);font-weight:700}
+  .sheet-foot{display:flex;gap:9px;padding:0 24px 22px;flex-wrap:wrap}
+  .warn{background:var(--saffron-soft);border:1px solid #EFE0BC;color:#7A5B10;
+    border-radius:9px;padding:12px 15px;font-size:13.5px;line-height:1.7}
+  .info-list{margin:0;padding-inline-start:19px;font-size:14px;line-height:1.85}
+  .info-list b{color:var(--ink)}
   .empty{text-align:center;padding:70px 20px;color:var(--muted)}
   .empty code{background:var(--card);border:1px solid var(--line);border-radius:6px;
     padding:2px 8px;font-family:var(--mono);font-size:13px;direction:ltr;display:inline-block}
@@ -147,6 +179,10 @@
       <span class="track"><span class="fill" id="meterFill" style="width:0%"></span></span>
       <span class="label num" id="meterText">0 / 0</span>
     </div>
+    <label class="autobtn" id="autoBtn">
+      <input type="checkbox" id="autoOn">
+      <span>حالت خودکار</span>
+    </label>
     <nav>
       <button id="tabQueue" aria-current="true">صف بررسی</button>
       <button id="tabApplied">ارسال‌شده‌ها</button>
@@ -194,6 +230,61 @@
   </section>
 </main>
 
+<div class="sheet" id="autoInfo">
+  <div class="sheet-card">
+    <div class="sheet-head"><h2>حالت خودکار</h2></div>
+    <div class="sheet-body">
+      <ul class="info-list">
+        <li>هر چند دقیقه خودش <b>پروژه‌های تازه را می‌گیرد</b> و امتیاز می‌دهد.</li>
+        <li>برای بهترین کاندیدا <b>یک پنجره باز می‌کند</b>: پروژه چیست، متن پیشنهاد چه
+            نوشته شده، و چند ژتون خرج می‌شود.</li>
+        <li>متن را همان‌جا می‌توانید <b>ویرایش کنید</b>؛ چیزی که تایید کنید همان چیزی است
+            که فرستاده می‌شود.</li>
+        <li>بدون تایید شما <b>هیچ پیشنهادی ارسال نمی‌شود</b>.</li>
+        <li>سقف روزانه از تایید هم بالاتر است؛ به سقف که برسد متوقف می‌شود.</li>
+      </ul>
+      <div class="warn" style="margin-top:16px">
+        ثبت پیشنهاد در کارلنسر یک <b>خرید</b> است (برنزی، نقره‌ای، طلایی) نه یک فرم ساده.
+        کاریاب متن را آماده و صفحه‌ی خرید را باز می‌کند، اما روی دکمه‌ی پرداخت
+        <b>خودش کلیک نمی‌کند</b> — انتخاب سطح و خرج کردن پول با شماست.
+      </div>
+      <div class="note" style="margin-top:14px">
+        با خاموش کردن حالت خودکار، همه‌ی تاییدهای معلق هم پاک می‌شوند.
+        این حالت با هر بار اجرای دوباره‌ی کاریاب خاموش شروع می‌شود.
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="act send" id="autoStart">روشن کن</button>
+      <button class="act skip" id="autoCancel">بی‌خیال</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="approve">
+  <div class="sheet-card">
+    <div class="sheet-head">
+      <h2 id="apTitle">—</h2>
+      <div class="facts">
+        <span class="num" id="apBudget"></span>
+        <span class="cost num" id="apToken"></span>
+        <span class="num" id="apScore"></span>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h3>شرح کارفرما</h3>
+      <div class="brief" id="apBrief" style="max-height:150px"></div>
+      <h3>متنی که فرستاده می‌شود</h3>
+      <textarea id="apDraft" style="min-height:150px"></textarea>
+      <div class="verdict" id="apVerdict"></div>
+    </div>
+    <div class="sheet-foot">
+      <button class="act send" id="apApprove">تایید و باز کردن صفحه‌ی ثبت</button>
+      <button class="act skip" id="apSkip">این یکی نه</button>
+      <button class="act skip" id="apLater">بعدا</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const $ = (s) => document.querySelector(s);
 const fa = (n) => Number(n).toLocaleString('fa-IR');
@@ -210,7 +301,94 @@ function tab(which){
   if (which === 'settings') loadSettings();
   if (which === 'applied') loadApplied();
 }
-$('#tabQueue').onclick = () => { tab('queue'); loadQueue(); };
+$('#tabQueue').onclick = () => { tab('queue'); // ---- auto mode ----
+let autoTimer = null, pendingId = null;
+
+function sheet(id, on){ $(id).classList.toggle('on', on); }
+
+$('#autoOn').onclick = (e) => {
+  e.preventDefault();
+  if ($('#autoOn').checked) { setAuto(false); }
+  else { sheet('#autoInfo', true); }
+};
+$('#autoCancel').onclick = () => sheet('#autoInfo', false);
+$('#autoStart').onclick = () => { sheet('#autoInfo', false); setAuto(true); };
+
+async function setAuto(on){
+  await fetch('/api/auto/enable?on=' + on, {method:'POST'});
+  $('#autoOn').checked = on;
+  $('#autoBtn').classList.toggle('on', on);
+  clearInterval(autoTimer);
+  if (on){ autoTick(); autoTimer = setInterval(autoTick, 20000); }
+  else { sheet('#approve', false); pendingId = null; }
+}
+
+async function autoTick(){
+  const d = await (await fetch('/api/auto')).json();
+  if (!d.enabled) return;
+  $('#queueLede').textContent =
+    `حالت خودکار روشن است — ${fa(d.sent_today)} از ${fa(d.daily_cap)} امروز، ` +
+    `${fa(d.queued)} در نوبت. ${d.reason || ''}`;
+
+  if (d.action === 'scan'){
+    busy(true, 'جستجوی خودکار');
+    await fetch('/api/actions/scan?pages=2', {method:'POST'}).catch(()=>{});
+    await fetch('/api/auto/scanned', {method:'POST'});
+    busy(false); await loadQueue(); return;
+  }
+  if (d.action === 'await_approval' && d.pending && d.pending.project_id !== pendingId){
+    showApproval(d.pending);
+  }
+}
+
+function showApproval(p){
+  pendingId = p.project_id;
+  $('#apTitle').textContent = p.title;
+  $('#apBudget').textContent = `${toman(p.min_budget)}–${toman(p.max_budget)} تومان`;
+  $('#apToken').textContent = `${fa(p.token)} ژتون`;
+  $('#apScore').textContent = `امتیاز ${fa(Math.round(p.score))}`;
+  $('#apBrief').textContent = p.description || 'کارفرما شرحی ننوشته است.';
+  $('#apDraft').value = p.draft || '';
+  checkApproval();
+  sheet('#approve', true);
+}
+
+async function checkApproval(){
+  const text = $('#apDraft').value;
+  const box = $('#apVerdict');
+  if (!text.trim()){
+    box.innerHTML = '<div class="bad">هنوز متنی نوشته نشده. از «گرفتن بریف برای Claude» در صف بررسی استفاده کنید.</div>';
+    $('#apApprove').disabled = true; return;
+  }
+  const d = await (await fetch('/api/check', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})})).json();
+  const bad = d.blocking || [];
+  $('#apApprove').disabled = bad.length > 0;
+  box.innerHTML = bad.length
+    ? `<div class="bad"><b>باید اصلاح شود:</b><ul>${bad.map(v=>`<li>${esc(v.message)}</li>`).join('')}</ul></div>`
+    : `<div class="good">امتیاز <b class="num">${fa(d.assessment.score)}</b> از ۱۰۰ · ${fa(d.assessment.word_count)} کلمه</div>`;
+}
+let apTimer;
+$('#apDraft').oninput = () => { clearTimeout(apTimer); apTimer = setTimeout(checkApproval, 350); };
+
+$('#apApprove').onclick = async () => {
+  const r = await fetch('/api/auto/approve/' + pendingId, {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: $('#apDraft').value})});
+  if (!r.ok){ const e = await r.json(); return alert(e.detail || 'تایید نشد'); }
+  const slug = (await (await fetch('/api/auto')).json()).pending?.slug;
+  window.open('https://www.karlancer.com/projects/' +
+    encodeURI(slug || ''), '_blank');
+  sheet('#approve', false); pendingId = null;
+  $('#queueLede').textContent =
+    'صفحه‌ی ثبت باز شد. متن را جای‌گذاری کنید، سطح پیشنهاد را انتخاب کنید، و بعد در صف بررسی «ارسال شد» را بزنید.';
+};
+$('#apSkip').onclick = async () => {
+  await fetch('/api/auto/skip/' + pendingId, {method:'POST'});
+  sheet('#approve', false); pendingId = null; loadQueue();
+};
+$('#apLater').onclick = () => { sheet('#approve', false); };
+
+loadQueue(); };
 $('#tabApplied').onclick = () => tab('applied');
 $('#tabSettings').onclick = () => tab('settings');
 
@@ -307,7 +485,94 @@ async function loadQueue(){
       await fetch('/api/applied/' + b.dataset.applied, {method:'POST'});
       const card = b.closest('.item');
       card.style.opacity = '.35';
-      setTimeout(() => { card.remove(); loadQueue(); }, 260);
+      setTimeout(() => { card.remove(); // ---- auto mode ----
+let autoTimer = null, pendingId = null;
+
+function sheet(id, on){ $(id).classList.toggle('on', on); }
+
+$('#autoOn').onclick = (e) => {
+  e.preventDefault();
+  if ($('#autoOn').checked) { setAuto(false); }
+  else { sheet('#autoInfo', true); }
+};
+$('#autoCancel').onclick = () => sheet('#autoInfo', false);
+$('#autoStart').onclick = () => { sheet('#autoInfo', false); setAuto(true); };
+
+async function setAuto(on){
+  await fetch('/api/auto/enable?on=' + on, {method:'POST'});
+  $('#autoOn').checked = on;
+  $('#autoBtn').classList.toggle('on', on);
+  clearInterval(autoTimer);
+  if (on){ autoTick(); autoTimer = setInterval(autoTick, 20000); }
+  else { sheet('#approve', false); pendingId = null; }
+}
+
+async function autoTick(){
+  const d = await (await fetch('/api/auto')).json();
+  if (!d.enabled) return;
+  $('#queueLede').textContent =
+    `حالت خودکار روشن است — ${fa(d.sent_today)} از ${fa(d.daily_cap)} امروز، ` +
+    `${fa(d.queued)} در نوبت. ${d.reason || ''}`;
+
+  if (d.action === 'scan'){
+    busy(true, 'جستجوی خودکار');
+    await fetch('/api/actions/scan?pages=2', {method:'POST'}).catch(()=>{});
+    await fetch('/api/auto/scanned', {method:'POST'});
+    busy(false); await loadQueue(); return;
+  }
+  if (d.action === 'await_approval' && d.pending && d.pending.project_id !== pendingId){
+    showApproval(d.pending);
+  }
+}
+
+function showApproval(p){
+  pendingId = p.project_id;
+  $('#apTitle').textContent = p.title;
+  $('#apBudget').textContent = `${toman(p.min_budget)}–${toman(p.max_budget)} تومان`;
+  $('#apToken').textContent = `${fa(p.token)} ژتون`;
+  $('#apScore').textContent = `امتیاز ${fa(Math.round(p.score))}`;
+  $('#apBrief').textContent = p.description || 'کارفرما شرحی ننوشته است.';
+  $('#apDraft').value = p.draft || '';
+  checkApproval();
+  sheet('#approve', true);
+}
+
+async function checkApproval(){
+  const text = $('#apDraft').value;
+  const box = $('#apVerdict');
+  if (!text.trim()){
+    box.innerHTML = '<div class="bad">هنوز متنی نوشته نشده. از «گرفتن بریف برای Claude» در صف بررسی استفاده کنید.</div>';
+    $('#apApprove').disabled = true; return;
+  }
+  const d = await (await fetch('/api/check', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})})).json();
+  const bad = d.blocking || [];
+  $('#apApprove').disabled = bad.length > 0;
+  box.innerHTML = bad.length
+    ? `<div class="bad"><b>باید اصلاح شود:</b><ul>${bad.map(v=>`<li>${esc(v.message)}</li>`).join('')}</ul></div>`
+    : `<div class="good">امتیاز <b class="num">${fa(d.assessment.score)}</b> از ۱۰۰ · ${fa(d.assessment.word_count)} کلمه</div>`;
+}
+let apTimer;
+$('#apDraft').oninput = () => { clearTimeout(apTimer); apTimer = setTimeout(checkApproval, 350); };
+
+$('#apApprove').onclick = async () => {
+  const r = await fetch('/api/auto/approve/' + pendingId, {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: $('#apDraft').value})});
+  if (!r.ok){ const e = await r.json(); return alert(e.detail || 'تایید نشد'); }
+  const slug = (await (await fetch('/api/auto')).json()).pending?.slug;
+  window.open('https://www.karlancer.com/projects/' +
+    encodeURI(slug || ''), '_blank');
+  sheet('#approve', false); pendingId = null;
+  $('#queueLede').textContent =
+    'صفحه‌ی ثبت باز شد. متن را جای‌گذاری کنید، سطح پیشنهاد را انتخاب کنید، و بعد در صف بررسی «ارسال شد» را بزنید.';
+};
+$('#apSkip').onclick = async () => {
+  await fetch('/api/auto/skip/' + pendingId, {method:'POST'});
+  sheet('#approve', false); pendingId = null; loadQueue();
+};
+$('#apLater').onclick = () => { sheet('#approve', false); };
+
+loadQueue(); }, 260);
     };
   });
   document.querySelectorAll('[data-brief]').forEach(b => {
@@ -444,7 +709,94 @@ $('#btnScan').onclick = async () => {
     if (!r.ok) throw new Error(d.detail || 'ناموفق');
     $('#queueLede').textContent =
       `${fa(d.seen)} پروژه دیده شد، ${fa(d.new)} تازه، ${fa(d.promoted)} کاندیدا.`;
-    await loadQueue();
+    await // ---- auto mode ----
+let autoTimer = null, pendingId = null;
+
+function sheet(id, on){ $(id).classList.toggle('on', on); }
+
+$('#autoOn').onclick = (e) => {
+  e.preventDefault();
+  if ($('#autoOn').checked) { setAuto(false); }
+  else { sheet('#autoInfo', true); }
+};
+$('#autoCancel').onclick = () => sheet('#autoInfo', false);
+$('#autoStart').onclick = () => { sheet('#autoInfo', false); setAuto(true); };
+
+async function setAuto(on){
+  await fetch('/api/auto/enable?on=' + on, {method:'POST'});
+  $('#autoOn').checked = on;
+  $('#autoBtn').classList.toggle('on', on);
+  clearInterval(autoTimer);
+  if (on){ autoTick(); autoTimer = setInterval(autoTick, 20000); }
+  else { sheet('#approve', false); pendingId = null; }
+}
+
+async function autoTick(){
+  const d = await (await fetch('/api/auto')).json();
+  if (!d.enabled) return;
+  $('#queueLede').textContent =
+    `حالت خودکار روشن است — ${fa(d.sent_today)} از ${fa(d.daily_cap)} امروز، ` +
+    `${fa(d.queued)} در نوبت. ${d.reason || ''}`;
+
+  if (d.action === 'scan'){
+    busy(true, 'جستجوی خودکار');
+    await fetch('/api/actions/scan?pages=2', {method:'POST'}).catch(()=>{});
+    await fetch('/api/auto/scanned', {method:'POST'});
+    busy(false); await loadQueue(); return;
+  }
+  if (d.action === 'await_approval' && d.pending && d.pending.project_id !== pendingId){
+    showApproval(d.pending);
+  }
+}
+
+function showApproval(p){
+  pendingId = p.project_id;
+  $('#apTitle').textContent = p.title;
+  $('#apBudget').textContent = `${toman(p.min_budget)}–${toman(p.max_budget)} تومان`;
+  $('#apToken').textContent = `${fa(p.token)} ژتون`;
+  $('#apScore').textContent = `امتیاز ${fa(Math.round(p.score))}`;
+  $('#apBrief').textContent = p.description || 'کارفرما شرحی ننوشته است.';
+  $('#apDraft').value = p.draft || '';
+  checkApproval();
+  sheet('#approve', true);
+}
+
+async function checkApproval(){
+  const text = $('#apDraft').value;
+  const box = $('#apVerdict');
+  if (!text.trim()){
+    box.innerHTML = '<div class="bad">هنوز متنی نوشته نشده. از «گرفتن بریف برای Claude» در صف بررسی استفاده کنید.</div>';
+    $('#apApprove').disabled = true; return;
+  }
+  const d = await (await fetch('/api/check', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})})).json();
+  const bad = d.blocking || [];
+  $('#apApprove').disabled = bad.length > 0;
+  box.innerHTML = bad.length
+    ? `<div class="bad"><b>باید اصلاح شود:</b><ul>${bad.map(v=>`<li>${esc(v.message)}</li>`).join('')}</ul></div>`
+    : `<div class="good">امتیاز <b class="num">${fa(d.assessment.score)}</b> از ۱۰۰ · ${fa(d.assessment.word_count)} کلمه</div>`;
+}
+let apTimer;
+$('#apDraft').oninput = () => { clearTimeout(apTimer); apTimer = setTimeout(checkApproval, 350); };
+
+$('#apApprove').onclick = async () => {
+  const r = await fetch('/api/auto/approve/' + pendingId, {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: $('#apDraft').value})});
+  if (!r.ok){ const e = await r.json(); return alert(e.detail || 'تایید نشد'); }
+  const slug = (await (await fetch('/api/auto')).json()).pending?.slug;
+  window.open('https://www.karlancer.com/projects/' +
+    encodeURI(slug || ''), '_blank');
+  sheet('#approve', false); pendingId = null;
+  $('#queueLede').textContent =
+    'صفحه‌ی ثبت باز شد. متن را جای‌گذاری کنید، سطح پیشنهاد را انتخاب کنید، و بعد در صف بررسی «ارسال شد» را بزنید.';
+};
+$('#apSkip').onclick = async () => {
+  await fetch('/api/auto/skip/' + pendingId, {method:'POST'});
+  sheet('#approve', false); pendingId = null; loadQueue();
+};
+$('#apLater').onclick = () => { sheet('#approve', false); };
+
+loadQueue();
   } catch (e) { $('#queueLede').textContent = 'جستجو ناموفق بود: ' + e.message; }
   busy(false);
 };
@@ -460,6 +812,93 @@ $('#btnHarvest').onclick = async () => {
   busy(false);
 };
 $('#showRejected').onchange = loadQueue;
+
+// ---- auto mode ----
+let autoTimer = null, pendingId = null;
+
+function sheet(id, on){ $(id).classList.toggle('on', on); }
+
+$('#autoOn').onclick = (e) => {
+  e.preventDefault();
+  if ($('#autoOn').checked) { setAuto(false); }
+  else { sheet('#autoInfo', true); }
+};
+$('#autoCancel').onclick = () => sheet('#autoInfo', false);
+$('#autoStart').onclick = () => { sheet('#autoInfo', false); setAuto(true); };
+
+async function setAuto(on){
+  await fetch('/api/auto/enable?on=' + on, {method:'POST'});
+  $('#autoOn').checked = on;
+  $('#autoBtn').classList.toggle('on', on);
+  clearInterval(autoTimer);
+  if (on){ autoTick(); autoTimer = setInterval(autoTick, 20000); }
+  else { sheet('#approve', false); pendingId = null; }
+}
+
+async function autoTick(){
+  const d = await (await fetch('/api/auto')).json();
+  if (!d.enabled) return;
+  $('#queueLede').textContent =
+    `حالت خودکار روشن است — ${fa(d.sent_today)} از ${fa(d.daily_cap)} امروز، ` +
+    `${fa(d.queued)} در نوبت. ${d.reason || ''}`;
+
+  if (d.action === 'scan'){
+    busy(true, 'جستجوی خودکار');
+    await fetch('/api/actions/scan?pages=2', {method:'POST'}).catch(()=>{});
+    await fetch('/api/auto/scanned', {method:'POST'});
+    busy(false); await loadQueue(); return;
+  }
+  if (d.action === 'await_approval' && d.pending && d.pending.project_id !== pendingId){
+    showApproval(d.pending);
+  }
+}
+
+function showApproval(p){
+  pendingId = p.project_id;
+  $('#apTitle').textContent = p.title;
+  $('#apBudget').textContent = `${toman(p.min_budget)}–${toman(p.max_budget)} تومان`;
+  $('#apToken').textContent = `${fa(p.token)} ژتون`;
+  $('#apScore').textContent = `امتیاز ${fa(Math.round(p.score))}`;
+  $('#apBrief').textContent = p.description || 'کارفرما شرحی ننوشته است.';
+  $('#apDraft').value = p.draft || '';
+  checkApproval();
+  sheet('#approve', true);
+}
+
+async function checkApproval(){
+  const text = $('#apDraft').value;
+  const box = $('#apVerdict');
+  if (!text.trim()){
+    box.innerHTML = '<div class="bad">هنوز متنی نوشته نشده. از «گرفتن بریف برای Claude» در صف بررسی استفاده کنید.</div>';
+    $('#apApprove').disabled = true; return;
+  }
+  const d = await (await fetch('/api/check', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})})).json();
+  const bad = d.blocking || [];
+  $('#apApprove').disabled = bad.length > 0;
+  box.innerHTML = bad.length
+    ? `<div class="bad"><b>باید اصلاح شود:</b><ul>${bad.map(v=>`<li>${esc(v.message)}</li>`).join('')}</ul></div>`
+    : `<div class="good">امتیاز <b class="num">${fa(d.assessment.score)}</b> از ۱۰۰ · ${fa(d.assessment.word_count)} کلمه</div>`;
+}
+let apTimer;
+$('#apDraft').oninput = () => { clearTimeout(apTimer); apTimer = setTimeout(checkApproval, 350); };
+
+$('#apApprove').onclick = async () => {
+  const r = await fetch('/api/auto/approve/' + pendingId, {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: $('#apDraft').value})});
+  if (!r.ok){ const e = await r.json(); return alert(e.detail || 'تایید نشد'); }
+  const slug = (await (await fetch('/api/auto')).json()).pending?.slug;
+  window.open('https://www.karlancer.com/projects/' +
+    encodeURI(slug || ''), '_blank');
+  sheet('#approve', false); pendingId = null;
+  $('#queueLede').textContent =
+    'صفحه‌ی ثبت باز شد. متن را جای‌گذاری کنید، سطح پیشنهاد را انتخاب کنید، و بعد در صف بررسی «ارسال شد» را بزنید.';
+};
+$('#apSkip').onclick = async () => {
+  await fetch('/api/auto/skip/' + pendingId, {method:'POST'});
+  sheet('#approve', false); pendingId = null; loadQueue();
+};
+$('#apLater').onclick = () => { sheet('#approve', false); };
 
 loadQueue();
 </script>

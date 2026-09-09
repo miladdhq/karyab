@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from ..config import Config, default_config_path
 from ..store import Store
 from ..api import KarlancerClient
+from ..auto import AutoState, next_action, plan_cycle
 from ..writer.rules import assess, validate
 from .secrets import (
     ApiKeyInvalid,
@@ -29,7 +30,8 @@ from .secrets import (
     save_api_key,
 )
 
-PAGE = (Path(__file__).parent / "index.html")
+PAGE = Path(__file__).parent / "index.html"
+STATIC = Path(__file__).parent / "static"
 
 
 class ApiKeyIn(BaseModel):
@@ -68,6 +70,24 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
     @app.get("/", response_class=HTMLResponse)
     def index() -> str:
         return PAGE.read_text(encoding="utf-8")
+
+    @app.get("/static/{name}")
+    def static_file(name: str):
+        """Serve the bundled font.
+
+        Vazirmatn is installed on this machine, but fontconfig registers every
+        weight as its own family ("Vazirmatn UI FD Black" is not weight 900 of
+        "Vazirmatn UI FD"), so a plain font-family + font-weight lookup finds
+        only Regular and the browser synthesises the rest. Shipping the
+        variable font and declaring one @font-face with a weight range fixes
+        that, and makes the page independent of what is installed.
+        """
+        from fastapi.responses import FileResponse
+
+        target = (STATIC / name).resolve()
+        if not target.is_file() or STATIC.resolve() not in target.parents:
+            raise HTTPException(status_code=404, detail="Not found.")
+        return FileResponse(target, headers={"Cache-Control": "public, max-age=604800"})
 
     @app.get("/api/queue")
     def queue(limit: int = 40, rejected: bool = False):
@@ -210,6 +230,106 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
             store.save_draft(project_id, draft.text, datetime.now(timezone.utc),
                              source="review", score=a.score, blocking=problems)
         return {"saved": True, "score": a.score, "blocking": problems}
+
+    # ---- auto mode -------------------------------------------------------
+    # Held in memory, not on disk: auto mode must never survive a restart and
+    # start bidding on its own after a reboot. Turning it on is a deliberate
+    # act each session.
+    auto = {"state": AutoState()}
+
+    @app.get("/api/auto")
+    def auto_status():
+        from datetime import datetime, timezone
+
+        cfg = config()
+        spent = today_spend(db_path)
+        with Store(db_path) as store:
+            rows = store.top_scores(limit=60)
+            written = store.drafts()
+        for r in rows:
+            d = written.get(r["project_id"])
+            r["draft"] = d["text"] if d else ""
+
+        state = auto["state"]
+        action = next_action(state, rows, cfg,
+                             spent_today=spent["count"],
+                             now=datetime.now(timezone.utc))
+        plan = plan_cycle(rows, cfg, spent_today=spent["count"],
+                          now=datetime.now(timezone.utc))
+
+        pending = None
+        if action.kind == "await_approval":
+            row = next(r for r in rows if r["project_id"] == action.project_id)
+            pending = {
+                "project_id": row["project_id"], "title": row["title"],
+                "description": row.get("description", ""), "slug": row["slug"],
+                "score": row["value"], "token": row["token"],
+                "min_budget": row["min_budget"], "max_budget": row["max_budget"],
+                "draft": row.get("draft", ""), "reasons": row.get("reasons", []),
+            }
+
+        return {
+            "enabled": state.enabled,
+            "action": action.kind,
+            "reason": action.reason,
+            "pending": pending,
+            "queued": len(plan.candidates),
+            "remaining": plan.remaining,
+            "sent_today": spent["count"],
+            "daily_cap": cfg.daily_cap,
+            "approved": sorted(state.approved),
+        }
+
+    @app.post("/api/auto/enable")
+    def auto_enable(on: bool = True):
+        from dataclasses import replace
+
+        auto["state"] = replace(auto["state"], enabled=bool(on),
+                                approved={} if not on else auto["state"].approved)
+        return {"enabled": auto["state"].enabled}
+
+    @app.post("/api/auto/approve/{project_id}")
+    def auto_approve(project_id: int, draft: DraftIn):
+        """Approve one proposal, exactly as edited, for one project."""
+        from dataclasses import replace
+        from datetime import datetime, timezone
+
+        problems = validate(draft.text)
+        if problems:
+            raise HTTPException(
+                status_code=400,
+                detail="; ".join(v.message for v in problems))
+
+        approved = dict(auto["state"].approved)
+        approved[project_id] = draft.text
+        auto["state"] = replace(auto["state"], approved=approved)
+
+        with Store(db_path) as store:
+            store.save_draft(project_id, draft.text,
+                             datetime.now(timezone.utc), source="approved",
+                             score=assess(draft.text).score, blocking=[])
+        return {"approved": True, "project_id": project_id}
+
+    @app.post("/api/auto/skip/{project_id}")
+    def auto_skip(project_id: int):
+        """Decline this one and move on, without marking it applied."""
+        from datetime import datetime, timezone
+
+        with Store(db_path) as store:
+            store.mark_applied(project_id, datetime.now(timezone.utc))
+            store.unmark_applied(project_id)
+            store.record_score(project_id, 3, 0.0, True,
+                               ["skipped in auto mode"],
+                               datetime.now(timezone.utc))
+        return {"skipped": True}
+
+    @app.post("/api/auto/scanned")
+    def auto_scanned():
+        from dataclasses import replace
+        from datetime import datetime, timezone
+
+        auto["state"] = replace(auto["state"], last_scan=datetime.now(timezone.utc))
+        return {"ok": True}
 
     @app.get("/api/settings")
     def get_settings():

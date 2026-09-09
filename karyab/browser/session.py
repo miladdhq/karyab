@@ -16,11 +16,23 @@ from pathlib import Path
 # directly rather than downloading its own ~150MB Chromium.
 BROWSER_CHANNEL = "chrome"
 
+# Chromium reads the desktop's proxy configuration, not just the environment,
+# so unsetting ALL_PROXY in the parent process is not enough: page navigation
+# still goes through the machine's SOCKS proxy and times out on domestic
+# Iranian sites. Forcing a direct connection makes the browser behave like the
+# rest of karyab, which sets trust_env=False for the same reason.
+# `proxy={"server": "direct://"}` is NOT the way to do this: Playwright's
+# request context tries to resolve "direct" as a hostname and fails with
+# EAI_AGAIN. Chromium's own flag is the reliable mechanism.
+LAUNCH_ARGS = {"args": ["--no-proxy-server"]}
+
 LOGIN_URL = "https://www.karlancer.com/login"
 PANEL_URL = "https://www.karlancer.com/panel/projects"
 
 # Probe endpoint: returns 200 with a session, 401 without one.
-AUTH_PROBE = "https://www.karlancer.com/api/projects"
+# /api/projects returns 403 even for a valid session; /api/dashboard is the
+# endpoint the logged-in panel itself calls first.
+AUTH_PROBE = "https://www.karlancer.com/api/dashboard"
 
 
 def default_session_path() -> Path:
@@ -57,7 +69,8 @@ def save_session(path: Path | None = None, *, timeout_seconds: int = 300) -> Pat
     target = Path(path) if path else SESSION_PATH
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(channel=BROWSER_CHANNEL, headless=False)
+        browser = p.chromium.launch(channel=BROWSER_CHANNEL, headless=False,
+                                    **LAUNCH_ARGS)
         context = browser.new_context()
         page = context.new_page()
         page.goto(LOGIN_URL, wait_until="domcontentloaded")
@@ -89,12 +102,33 @@ def save_session(path: Path | None = None, *, timeout_seconds: int = 300) -> Pat
 
 
 def _context_is_authenticated(context) -> bool:
-    """True if this browser context can reach an authenticated endpoint."""
+    """True if this context can actually read authenticated data.
+
+    Checking for HTTP 200 alone is not a test: without `Accept:
+    application/json` the API serves the Angular shell as 200 text/html, so a
+    logged-out session passes. The real test is a JSON body carrying the
+    bearer token from localStorage.
+    """
     try:
-        response = context.request.get(AUTH_PROBE)
+        state = context.storage_state()
     except Exception:
         return False
-    return response.status == 200
+
+    try:
+        from .authed import bearer_header, extract_token
+        headers = bearer_header(extract_token(state))
+    except Exception:
+        return False
+
+    try:
+        response = context.request.get(AUTH_PROBE, headers=headers)
+    except Exception:
+        return False
+
+    if response.status != 200:
+        return False
+    ctype = (response.headers.get("content-type") or "").lower()
+    return "json" in ctype
 
 
 def load_context(playwright, path: Path | None = None, *, headless: bool = True):
@@ -109,7 +143,8 @@ def load_context(playwright, path: Path | None = None, *, headless: bool = True)
             f"No saved session at {target}. Run `karyab login` first."
         )
 
-    browser = playwright.chromium.launch(channel=BROWSER_CHANNEL, headless=headless)
+    browser = playwright.chromium.launch(channel=BROWSER_CHANNEL, headless=headless,
+                                         **LAUNCH_ARGS)
     context = browser.new_context(storage_state=str(target))
     if not _context_is_authenticated(context):
         browser.close()
