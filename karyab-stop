@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Stop the karyab server. Uses the pidfile written by karyab-start, so it
+# cannot match — and kill — an unrelated process that merely mentions karyab.
+set -u
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PIDFILE="$HERE/.karyab.pid"
+
+if [ ! -f "$PIDFILE" ]; then
+  echo "karyab does not appear to be running (no pidfile)."
+  exit 0
+fi
+PID="$(cat "$PIDFILE")"
+if kill -0 "$PID" 2>/dev/null; then
+  kill "$PID" && echo "karyab stopped."
+else
+  echo "karyab was not running."
+fi
+rm -f "$PIDFILE"

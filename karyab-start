@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Start karyab and open it in the browser.
+# Safe to run twice: if it is already up, this just opens the tab.
+set -u
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PORT="${KARYAB_PORT:-8765}"
+URL="http://127.0.0.1:$PORT"
+PIDFILE="$HERE/.karyab.pid"
+LOG="$HERE/.karyab-server.log"
+
+# karlancer.com is an Iranian domestic site and this server is local. The
+# system SOCKS proxy breaks both, so it is dropped for this process only.
+unset ALL_PROXY all_proxy HTTP_PROXY http_proxy HTTPS_PROXY https_proxy
+
+is_up() {
+  "$HERE/.venv/bin/python" - "$URL" <<'PY' 2>/dev/null
+import sys, urllib.request
+try:
+    urllib.request.urlopen(sys.argv[1], timeout=1)
+except Exception:
+    sys.exit(1)
+PY
+}
+
+if is_up; then
+  echo "karyab is already running."
+else
+  echo "Starting karyab..."
+  nohup "$HERE/.venv/bin/python" -m karyab.cli review --port "$PORT" >"$LOG" 2>&1 &
+  echo $! > "$PIDFILE"
+  for _ in $(seq 1 40); do is_up && break; sleep 0.25; done
+  if ! is_up; then
+    echo "karyab did not start. Last lines of $LOG:" >&2
+    tail -15 "$LOG" >&2
+    exit 1
+  fi
+fi
+
+echo "Open: $URL"
+command -v xdg-open >/dev/null && (xdg-open "$URL" >/dev/null 2>&1 &)

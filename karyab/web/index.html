@@ -41,7 +41,7 @@
 
   .meter{display:flex;align-items:center;gap:10px;padding:5px 12px;
     background:var(--saffron-soft);border:1px solid #EFE0BC;border-radius:999px}
-  .meter .track{width:104px;height:7px;background:#EFE2C2;border-radius:99px;overflow:hidden}
+  .meter .track{width:78px;height:7px;background:#EFE2C2;border-radius:99px;overflow:hidden}
   .meter .fill{height:100%;background:var(--saffron);border-radius:99px;transition:width .4s ease}
   .meter .label{font-size:12.5px;color:#7A5B10;white-space:nowrap}
 
@@ -108,6 +108,20 @@
   .note{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
     font-size:13px;color:var(--muted)}
   .note b{color:var(--ink)}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .toggle{display:flex;gap:7px;align-items:center;font-size:13.5px;color:var(--muted);cursor:pointer}
+  .busy{font-size:13px;color:var(--lapis)}
+  .busy::after{content:"…";animation:dots 1.2s steps(4,end) infinite}
+  @keyframes dots{0%{content:"."}33%{content:".."}66%{content:"..."}}
+  .brief-box{margin-top:12px;padding:12px;background:var(--paper);border:1px solid var(--line);
+    border-radius:9px;font-size:12.5px;white-space:pre-wrap;max-height:220px;overflow:auto;
+    direction:ltr;text-align:left;font-family:var(--mono);line-height:1.6;display:none}
+  .brief-box.on{display:block}
+  .tiny{font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--card);
+    color:var(--muted);border-radius:7px;padding:5px 11px;cursor:pointer}
+  .tiny:hover{border-color:var(--lapis);color:var(--lapis)}
+  .saved{font-size:12.5px;color:var(--ok);opacity:0;transition:opacity .3s}
+  .saved.on{opacity:1}
   .empty{text-align:center;padding:70px 20px;color:var(--muted)}
   .empty code{background:var(--card);border:1px solid var(--line);border-radius:6px;
     padding:2px 8px;font-family:var(--mono);font-size:13px;direction:ltr;display:inline-block}
@@ -122,7 +136,7 @@
   <div class="bar">
     <div class="wordmark">کار<span>یاب</span></div>
     <div class="meter" id="meter" title="هزینه‌ی ژتونیِ کاندیداهای صف">
-      <span class="label">ژتون صف</span>
+      <span class="label">صف امروز</span>
       <span class="track"><span class="fill" id="meterFill" style="width:0%"></span></span>
       <span class="label num" id="meterText">0 / 0</span>
     </div>
@@ -135,6 +149,12 @@
 
 <main>
   <section id="viewQueue">
+    <div class="toolbar">
+      <button class="act send" id="btnScan">جستجوی پروژه‌های تازه</button>
+      <button class="act skip" id="btnHarvest">به‌روزرسانی سوابق</button>
+      <label class="toggle"><input type="checkbox" id="showRejected"> نمایش ردشده‌ها</label>
+      <span class="busy" id="busy" hidden></span>
+    </div>
     <p class="lede" id="queueLede">در حال بارگذاری…</p>
     <div id="list"></div>
   </section>
@@ -177,14 +197,19 @@ $('#tabQueue').onclick = () => tab('queue');
 $('#tabSettings').onclick = () => tab('settings');
 
 async function loadQueue(){
-  const r = await fetch('/api/queue?limit=40');
+  const r = await fetch('/api/queue?limit=40&rejected=' + $('#showRejected').checked);
   const d = await r.json();
   const items = d.items || [];
+  // The cap counts PROPOSALS per day; the token figure is the cost of
+  // sending them. Comparing the two directly would be nonsense, so the bar
+  // tracks candidates against the cap and the tokens are stated beside it.
   const cap = d.daily_cap || 0;
+  const n = d.candidate_count || 0;
   const queued = d.queued_tokens || 0;
-  $('#meterFill').style.width = cap ? Math.min(100, queued/cap*100) + '%' : '0%';
-  $('#meterText').textContent = `${fa(queued)} / ${fa(cap)}`;
-  $('#meter').title = `ارسال ${fa(d.candidate_count||0)} کاندیدای صف، ${fa(queued)} ژتون خرج می‌کند`;
+  $('#meterFill').style.width = cap ? Math.min(100, n/cap*100) + '%' : '0%';
+  $('#meterText').textContent = `${fa(n)} / ${fa(cap)} پیشنهاد · ${fa(queued)} ژتون`;
+  $('#meter').title =
+    `${fa(n)} کاندیدا از سقف روزانه‌ی ${fa(cap)} تا؛ ارسال همه ${fa(queued)} ژتون خرج می‌کند`;
 
   if (!items.length){
     $('#queueLede').textContent = '';
@@ -221,9 +246,12 @@ async function loadQueue(){
           <textarea data-draft="${i}" placeholder="هنوز پیش‌نویسی ساخته نشده. اینجا بنویسید تا بررسی شود.">${esc(it.draft || "")}</textarea>
           <div class="verdict" data-verdict="${i}"></div>
           <div class="actions">
-            <button class="act send" data-send="${i}" disabled>ارسال پیشنهاد</button>
+            <button class="act send" data-send="${i}" disabled>باز کردن آگهی و ارسال</button>
+            <button class="tiny" data-brief="${it.project_id}">گرفتن بریف برای Claude</button>
             <button class="act skip" data-skip="${i}">رد کردن</button>
+            <span class="saved" data-saved="${i}">ذخیره شد</span>
           </div>
+          <div class="brief-box" data-briefbox="${it.project_id}"></div>
         </div>
         <div class="pane">
           <h3>شرح کارفرما</h3>
@@ -237,12 +265,45 @@ async function loadQueue(){
     h.onclick = () => h.closest('.item').classList.toggle('is-open');
   });
   document.querySelectorAll('[data-draft]').forEach(t => {
-    let timer; t.oninput = () => { clearTimeout(timer); timer = setTimeout(() => check(t), 400); };
+    const pid = items[t.dataset.draft].project_id;
+    let timer;
+    t.oninput = () => {
+      clearTimeout(timer); timer = setTimeout(() => check(t), 400);
+      saveDraft(t, pid);
+    };
     if (t.value.trim()) check(t);
   });
   document.querySelectorAll('[data-skip]').forEach(b => {
     b.onclick = () => b.closest('.item').remove();
   });
+  document.querySelectorAll('[data-send]').forEach(b => {
+    b.onclick = () => {
+      const it = items[b.dataset.send];
+      window.open('https://www.karlancer.com/projects/' + encodeURI(it.slug), '_blank');
+    };
+  });
+  document.querySelectorAll('[data-brief]').forEach(b => {
+    b.onclick = async () => {
+      const box = document.querySelector(`[data-briefbox="${b.dataset.brief}"]`);
+      if (box.classList.contains('on')) { box.classList.remove('on'); return; }
+      box.textContent = 'در حال آماده‌سازی…'; box.classList.add('on');
+      const d = await (await fetch('/api/brief/' + b.dataset.brief)).json();
+      box.textContent = d.brief;
+      try { await navigator.clipboard.writeText(d.brief);
+            b.textContent = 'در کلیپ‌بورد کپی شد — به Claude بدهید'; } catch (e) {}
+    };
+  });
+}
+
+let saveTimer;
+async function saveDraft(area, projectId){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    await fetch('/api/draft/' + projectId, {method:'POST',
+      headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: area.value})});
+    const tag = document.querySelector(`[data-saved="${area.dataset.draft}"]`);
+    if (tag){ tag.classList.add('on'); setTimeout(() => tag.classList.remove('on'), 1400); }
+  }, 700);
 }
 
 async function check(area){
@@ -299,6 +360,35 @@ $('#keyClear').onclick = async () => {
 };
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function busy(on, msg){
+  const el = $('#busy'); el.hidden = !on; el.textContent = msg || '';
+  $('#btnScan').disabled = on; $('#btnHarvest').disabled = on;
+}
+$('#btnScan').onclick = async () => {
+  busy(true, 'در حال جستجو');
+  try {
+    const r = await fetch('/api/actions/scan?pages=2', {method:'POST'});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'ناموفق');
+    $('#queueLede').textContent =
+      `${fa(d.seen)} پروژه دیده شد، ${fa(d.new)} تازه، ${fa(d.promoted)} کاندیدا.`;
+    await loadQueue();
+  } catch (e) { $('#queueLede').textContent = 'جستجو ناموفق بود: ' + e.message; }
+  busy(false);
+};
+$('#btnHarvest').onclick = async () => {
+  busy(true, 'در حال خواندن سوابق');
+  try {
+    const r = await fetch('/api/actions/harvest', {method:'POST'});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'ناموفق');
+    $('#queueLede').textContent =
+      `${fa(d.fetched)} پیشنهاد خوانده شد؛ ${fa(d.teachable)} نمونه‌ی برنده برای لحن.`;
+  } catch (e) { $('#queueLede').textContent = 'ناموفق: ' + e.message; }
+  busy(false);
+};
+$('#showRejected').onchange = loadQueue;
 
 loadQueue();
 </script>

@@ -19,6 +19,7 @@ from pydantic import BaseModel
 
 from ..config import Config, default_config_path
 from ..store import Store
+from ..api import KarlancerClient
 from ..writer.rules import assess, validate
 from .secrets import (
     ApiKeyInvalid,
@@ -98,6 +99,85 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
         blocking = [asdict(v) for v in validate(draft.text)]
         a = assess(draft.text)
         return {"blocking": blocking, "assessment": asdict(a)}
+
+    @app.post("/api/actions/scan")
+    def action_scan(pages: int = 2):
+        """Poll the feed and score it. Reads only; sends nothing."""
+        from datetime import datetime, timezone
+
+        from ..scan import run_scan
+
+        cfg = config()
+        try:
+            with Store(db_path) as store, KarlancerClient() as client:
+                result = run_scan(client, store, cfg,
+                                  now=datetime.now(timezone.utc), pages=pages)
+        except Exception as exc:
+            raise HTTPException(status_code=502, detail=str(exc)[:200]) from exc
+        return {"seen": result.seen, "new": result.new, "rejected": result.rejected,
+                "promoted": result.promoted, "errors": list(result.errors)}
+
+    @app.post("/api/actions/harvest")
+    def action_harvest():
+        """Re-read the user's own bid history to refresh the voice corpus."""
+        import json as _json
+        from datetime import datetime, timezone
+
+        from playwright.sync_api import sync_playwright
+
+        from ..browser.authed import AuthTokenMissing, bearer_header, extract_token
+        from ..browser.session import SESSION_PATH, SessionExpired, load_context
+        from ..harvest import harvest
+
+        try:
+            state = _json.loads(SESSION_PATH.read_text(encoding="utf-8"))
+            headers = bearer_header(extract_token(state))
+        except FileNotFoundError:
+            raise HTTPException(status_code=400,
+                                detail="Not logged in. Run: karyab login") from None
+        except AuthTokenMissing as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        try:
+            with sync_playwright() as p:
+                browser, context = load_context(p, headless=True)
+                with Store(db_path) as store:
+                    result = harvest(context.request, headers, store,
+                                     datetime.now(timezone.utc))
+                    stats = store.voice_stats()
+                browser.close()
+        except SessionExpired as exc:
+            raise HTTPException(status_code=401, detail=str(exc)) from exc
+        return {"fetched": result.fetched, **stats}
+
+    @app.get("/api/brief/{project_id}")
+    def brief_one(project_id: int):
+        """The full writing brief for one project, ready to paste to Claude."""
+        from ..cli import matched_terms
+        from ..writer.prompt import build_brief
+
+        with Store(db_path) as store:
+            rows = store.top_scores(limit=200)
+            row = next((r for r in rows if r["project_id"] == project_id), None)
+            if row is None:
+                raise HTTPException(status_code=404, detail="No such project.")
+            voice = store.teachable_samples(
+                match_skills=matched_terms(row.get("reasons") or ()), limit=3)
+            corpus = store.voice_stats()
+        return {"brief": build_brief(row, voice), "title": row["title"],
+                "voice_samples": len(voice), "corpus": corpus["teachable"]}
+
+    @app.post("/api/draft/{project_id}")
+    def save_one_draft(project_id: int, draft: DraftIn):
+        """Store an edited draft so it survives a page reload."""
+        from datetime import datetime, timezone
+
+        a = assess(draft.text)
+        problems = [v.code for v in validate(draft.text)]
+        with Store(db_path) as store:
+            store.save_draft(project_id, draft.text, datetime.now(timezone.utc),
+                             source="review", score=a.score, blocking=problems)
+        return {"saved": True, "score": a.score, "blocking": problems}
 
     @app.get("/api/settings")
     def get_settings():
