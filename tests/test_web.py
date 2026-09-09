@@ -34,8 +34,10 @@ def test_the_page_renders_right_to_left(client):
     assert 'dir="rtl"' in body and 'lang="fa"' in body
 
 
-def test_an_empty_queue_says_what_to_run(client):
-    assert "karyab scan" in client.get("/").text
+def test_the_page_loads_its_script_from_a_file(client):
+    # Inline script could not be syntax-checked and was edited into corruption;
+    # see tests/test_page_js.py.
+    assert "/static/app.js" in client.get("/").text
 
 
 # --- the draft gate is the same one the writer uses -------------------------
@@ -103,3 +105,27 @@ def test_the_queue_endpoint_works_on_an_empty_database(client):
     d = client.get("/api/queue").json()
     assert d["items"] == []
     assert "threshold" in d and "daily_cap" in d
+
+
+def test_the_suggested_amount_sits_inside_the_clients_band():
+    from karyab.web.app import suggest_amount
+    for low, high in [(1_000_000, 3_000_000), (500_000, 800_000),
+                      (30_000_000, 70_000_000), (0, 2_000_000)]:
+        amount = suggest_amount({"min_budget": low, "max_budget": high})
+        assert low <= amount <= high or amount == 0, (low, high, amount)
+
+
+def test_the_suggested_amount_is_a_round_number():
+    # 2,333,333 reads as computed; 2,300,000 reads as considered.
+    amount = suggest_amount_helper(1_000_000, 3_000_000)
+    assert amount % 100_000 == 0
+
+
+def suggest_amount_helper(low, high):
+    from karyab.web.app import suggest_amount
+    return suggest_amount({"min_budget": low, "max_budget": high})
+
+
+def test_no_budget_means_no_suggestion():
+    from karyab.web.app import suggest_amount
+    assert suggest_amount({"min_budget": 0, "max_budget": 0}) == 0

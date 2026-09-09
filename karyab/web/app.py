@@ -40,6 +40,8 @@ class ApiKeyIn(BaseModel):
 
 class DraftIn(BaseModel):
     text: str
+    # The proposal amount in toman — the price actually bid on the project.
+    amount: int = 0
 
 
 def is_loopback(host: str) -> bool:
@@ -49,6 +51,23 @@ def is_loopback(host: str) -> bool:
         return ipaddress.ip_address(host).is_loopback
     except ValueError:
         return False
+
+
+def suggest_amount(row: dict) -> int:
+    """A starting price inside the client's stated range.
+
+    Two thirds of the way up the band: high enough not to signal desperation,
+    below the ceiling that has already earned this user a one-star review.
+    Rounded to a readable number, because a price like 2,333,333 reads as
+    computed rather than considered.
+    """
+    low = row.get("min_budget") or 0
+    high = row.get("max_budget") or 0
+    if not high:
+        return 0
+    value = low + (high - low) * 2 // 3 if high > low else high
+    step = 100_000 if value >= 1_000_000 else 50_000
+    return max(step, (value // step) * step)
 
 
 def today_spend(db_path: str) -> dict:
@@ -266,6 +285,7 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
                 "score": row["value"], "token": row["token"],
                 "min_budget": row["min_budget"], "max_budget": row["max_budget"],
                 "draft": row.get("draft", ""), "reasons": row.get("reasons", []),
+                "suggested_amount": suggest_amount(row),
             }
 
         return {
@@ -299,6 +319,20 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
             raise HTTPException(
                 status_code=400,
                 detail="; ".join(v.message for v in problems))
+
+        # A bid above the client's stated ceiling is the one thing the user's
+        # own review history punishes explicitly: one of their five one-star
+        # reviews is a client objecting to exactly that.
+        if draft.amount:
+            with Store(db_path) as store:
+                row = next((r for r in store.top_scores(limit=200)
+                            if r["project_id"] == project_id), None)
+            if row and row["max_budget"] and draft.amount > row["max_budget"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{draft.amount:,} is above the client's stated ceiling of "
+                           f"{row['max_budget']:,} toman. Bidding over the ceiling has "
+                           f"already cost you a one-star review.")
 
         approved = dict(auto["state"].approved)
         approved[project_id] = draft.text
