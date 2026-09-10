@@ -109,6 +109,17 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="Not found.")
         return FileResponse(target, headers={"Cache-Control": "public, max-age=604800"})
 
+    @app.get("/api/health")
+    def health():
+        """Cheap liveness check that also proves the database is readable."""
+        try:
+            with Store(db_path) as store:
+                store.top_scores(limit=1)
+        except Exception as exc:
+            raise HTTPException(status_code=503,
+                                detail=f"database unreadable: {exc}") from exc
+        return {"ok": True}
+
     @app.get("/api/queue")
     def queue(limit: int = 40, rejected: bool = False, view: str = "all"):
         cfg = config()
@@ -437,7 +448,18 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
 
 def serve(db_path: str, *, host: str = "127.0.0.1", port: int = 8765,
           allow_remote: bool = False) -> None:
+    import logging
+
     import uvicorn
+
+    # Previously this ran at log_level="warning" with nothing else, so when the
+    # server stopped there was no record of why — "karyab is down" came with no
+    # evidence at all. Access logs and a timestamped format cost nothing and
+    # make the next failure diagnosable.
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
 
     if not is_loopback(host) and not allow_remote:
         raise SystemExit(
@@ -451,5 +473,7 @@ def serve(db_path: str, *, host: str = "127.0.0.1", port: int = 8765,
         print(f"WARNING: serving on {host} with no authentication. "
               f"Anyone on this network can read your queue and spend your API credit.")
 
+    logging.getLogger("karyab").info("starting on http://%s:%s", host, port)
     print(f"karyab review → http://{host}:{port}")
-    uvicorn.run(create_app(db_path), host=host, port=port, log_level="warning")
+    uvicorn.run(create_app(db_path), host=host, port=port,
+                log_level="info", access_log=True)

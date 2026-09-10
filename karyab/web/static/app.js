@@ -352,7 +352,10 @@ function boot() {
   };
 
   $('#btnHarvest').onclick = async () => {
-    busy(true, 'در حال خواندن سوابق');
+    // This genuinely takes a couple of minutes: it walks 30+ pages of bid
+    // history through a real browser. Saying so is the difference between
+    // "working" and "the app is dead".
+    busy(true, 'خواندن سوابق (تا دو دقیقه طول می‌کشد)');
     try {
       const r = await fetch('/api/actions/harvest', { method: 'POST' });
       const d = await r.json();
@@ -427,4 +430,20 @@ function boot() {
   loadQueue();
 }
 
-document.addEventListener('DOMContentLoaded', boot);
+// If the server goes away, the page otherwise just stops updating and looks
+// fine. Say so plainly instead.
+async function heartbeat() {
+  try {
+    const r = await fetch('/api/health', { cache: 'no-store' });
+    if (!r.ok) throw new Error('unhealthy');
+    $('#down').hidden = true;
+  } catch (e) {
+    $('#down').hidden = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  boot();
+  heartbeat();
+  setInterval(heartbeat, 10000);
+});

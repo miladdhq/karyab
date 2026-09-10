@@ -1,17 +1,26 @@
 # کاریاب / karyab — how to use it
 
-## Open it
+## It runs itself
 
-Double-click **کاریاب — Karyab** in your applications menu.
+karyab is installed as a user service. It starts when you log in, comes back
+within seconds if it ever stops, and survives a reboot. You should not have to
+start it.
 
-Or from a terminal:
+Just open **http://127.0.0.1:8765**, or double-click **کاریاب — Karyab** in
+your applications menu.
 
-    ~/dev/karyab/karyab-start
+If the page shows a red bar saying it is not responding, wait a few seconds —
+the service restarts itself. If it persists:
 
-Either way it opens **http://127.0.0.1:8765** in your browser. Running it
-twice is safe — it just opens the tab again.
+    cd ~/dev/karyab
+    ./karyab-service status     # is it running, and what did it last say
+    ./karyab-service logs       # follow the log
+    ./karyab-service restart
 
-To stop it: `~/dev/karyab/karyab-stop`
+To uninstall the service: `./karyab-service remove`
+
+`karyab-start` and `karyab-stop` still work for running it by hand, but with
+the service installed you do not need them.
 
 ## What you do in the page
 
@@ -46,7 +55,9 @@ Marked something by mistake? Open **ارسال‌شده‌ها** and press
 **برگرداندن به صف**.
 
 **به‌روزرسانی سوابق** — re-reads your bid history so the voice examples stay
-current. Worth doing once a month, or after you win something.
+current. Worth doing once a month, or after you win something. **This takes
+up to two minutes** — it walks thirty-odd pages through a real browser. The
+button says so while it runs; the page is not stuck.
 
 ## The tabs
 
@@ -80,9 +91,11 @@ re-scan needed.
 
 ## If something breaks
 
-**The page will not open** — check the log:
+**The page will not open** — the service should fix itself within seconds.
+If not:
 
-    tail ~/dev/karyab/.karyab-server.log
+    ./karyab-service status
+    tail -40 ~/dev/karyab/.karyab-server.log
 
 **"Not logged in" or "session no longer authenticates"** — your Karlancer
 session expired:

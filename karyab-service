@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Install karyab as a user service so it restarts itself and survives logout.
+#
+# Why this exists: karyab was being run as a plain background process. Nothing
+# restarted it when it stopped, nothing captured why, and it did not come back
+# after a reboot — so "karyab is down" had no evidence and no recovery.
+#
+#   ./karyab-service install    set it up and start it
+#   ./karyab-service status     is it running, and what did it last say
+#   ./karyab-service logs       follow the log
+#   ./karyab-service restart    restart it
+#   ./karyab-service remove     uninstall
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+UNIT_DIR="$HOME/.config/systemd/user"
+UNIT="$UNIT_DIR/karyab.service"
+PORT="${KARYAB_PORT:-8765}"
+
+install_unit() {
+  mkdir -p "$UNIT_DIR"
+  cat > "$UNIT" <<UNITEOF
+[Unit]
+Description=karyab review dashboard
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=$HERE
+ExecStart=$HERE/.venv/bin/python -m karyab.cli review --port $PORT
+
+# The machine's SOCKS proxy breaks both karlancer.com and the local server,
+# so the service runs without it, exactly as karyab-start does.
+Environment=ALL_PROXY=
+Environment=all_proxy=
+Environment=HTTP_PROXY=
+Environment=http_proxy=
+Environment=HTTPS_PROXY=
+Environment=https_proxy=
+Environment=NO_PROXY=*
+Environment=PYTHONUNBUFFERED=1
+
+# The point of the whole file: bring it back whenever it stops, for any
+# reason, without hammering if it is failing to start at all.
+Restart=always
+RestartSec=3
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+StandardOutput=append:$HERE/.karyab-server.log
+StandardError=append:$HERE/.karyab-server.log
+
+[Install]
+WantedBy=default.target
+UNITEOF
+  systemctl --user daemon-reload
+  systemctl --user enable --now karyab.service
+  # Survive logout and come back after a reboot without anyone logging in.
+  loginctl enable-linger "$USER" 2>/dev/null || \
+    echo "note: could not enable linger; karyab will start when you log in."
+  echo "karyab installed as a user service on port $PORT."
+  echo "It will restart itself if it stops, and start again after a reboot."
+}
+
+case "${1:-status}" in
+  install) install_unit ;;
+  remove)
+    systemctl --user disable --now karyab.service 2>/dev/null || true
+    rm -f "$UNIT"; systemctl --user daemon-reload
+    echo "karyab service removed." ;;
+  restart) systemctl --user restart karyab.service; echo "restarted." ;;
+  logs)    journalctl --user -u karyab.service -n 50 -f ;;
+  status)
+    if [ -f "$UNIT" ]; then
+      systemctl --user --no-pager status karyab.service | head -20
+    else
+      echo "Not installed as a service. Run: ./karyab-service install"
+    fi ;;
+  *) echo "usage: $0 {install|status|logs|restart|remove}" >&2; exit 2 ;;
+esac
