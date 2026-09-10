@@ -12,6 +12,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g,
   (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 let items = [];
+let currentView = 'all';
 let autoTimer = null;
 let pendingId = null;
 
@@ -32,9 +33,10 @@ function tab(which) {
 
 // ---------- review queue ----------
 async function loadQueue() {
-  const r = await fetch('/api/queue?limit=40&rejected=' + $('#showRejected').checked);
+  const r = await fetch('/api/queue?limit=60&view=' + encodeURIComponent(currentView));
   const d = await r.json();
   items = d.items || [];
+  renderViews(d.views || [], d.view);
 
   const cap = d.daily_cap || 0;
   const sent = d.sent_today || 0;
@@ -46,13 +48,13 @@ async function loadQueue() {
   if (!items.length) {
     $('#queueLede').textContent = '';
     $('#list').innerHTML =
-      '<div class="empty"><p>هنوز چیزی در صف نیست.</p>' +
-      '<p>دکمه‌ی «جستجوی پروژه‌های تازه» را بزنید.</p></div>';
+      '<div class="empty"><p>در این دسته چیزی نیست.</p>' +
+      '<p>دسته‌ی دیگری را ببینید، یا «جستجوی پروژه‌های تازه» را بزنید.</p></div>';
     return;
   }
   const over = items.filter((i) => i.value >= d.threshold).length;
   $('#queueLede').textContent =
-    `${fa(items.length)} پروژه بررسی شد، ${fa(over)} تا از آستانه‌ی ${fa(d.threshold)} گذشت.`;
+    `${fa(items.length)} پروژه در این دسته، ${fa(over)} تا بالای آستانه‌ی ${fa(d.threshold)}.`;
 
   $('#list').innerHTML = items.map((it, i) => {
     const cls = it.rejected ? 'rej' : (it.value >= d.threshold ? '' : 'below');
@@ -92,6 +94,19 @@ async function loadQueue() {
   }).join('');
 
   wireCards();
+}
+
+function renderViews(views, active) {
+  $('#views').innerHTML = views.map((v) => `
+    <button class="vtab" data-view="${v.key}" aria-current="${v.key === active}"
+            title="${esc(v.hint)}">
+      ${esc(v.label)}<span class="n">${fa(v.count)}</span>
+    </button>`).join('');
+  const current = views.find((v) => v.key === active);
+  $('#viewHint').textContent = current ? current.hint : '';
+  document.querySelectorAll('[data-view]').forEach((b) => {
+    b.onclick = () => { currentView = b.dataset.view; loadQueue(); };
+  });
 }
 
 function wireCards() {
@@ -322,7 +337,6 @@ function boot() {
   $('#tabQueue').onclick = () => { tab('queue'); loadQueue(); };
   $('#tabApplied').onclick = () => tab('applied');
   $('#tabSettings').onclick = () => tab('settings');
-  $('#showRejected').onchange = loadQueue;
 
   $('#btnScan').onclick = async () => {
     busy(true, 'در حال جستجو');

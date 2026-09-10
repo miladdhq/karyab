@@ -21,6 +21,7 @@ from ..config import Config, default_config_path
 from ..store import Store
 from ..api import KarlancerClient
 from ..auto import AutoState, next_action, plan_cycle
+from ..views import VIEWS, apply_view, view_counts
 from ..writer.rules import assess, validate
 from .secrets import (
     ApiKeyInvalid,
@@ -109,16 +110,25 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
         return FileResponse(target, headers={"Cache-Control": "public, max-age=604800"})
 
     @app.get("/api/queue")
-    def queue(limit: int = 40, rejected: bool = False):
+    def queue(limit: int = 40, rejected: bool = False, view: str = "all"):
         cfg = config()
         with Store(db_path) as store:
             rows = store.top_scores(limit=limit)
             written = store.drafts()
-        items = [r for r in rows if rejected or not r["rejected"]]
-        for item in items:
-            draft = written.get(item["project_id"])
-            item["draft"] = draft["text"] if draft else ""
-            item["draft_source"] = draft["source"] if draft else ""
+        from datetime import datetime, timezone
+
+        now = datetime.now(timezone.utc)
+        # Drafts must be attached BEFORE filtering: the "drafted" view selects
+        # on this field, and attaching afterwards left it permanently empty.
+        for row in rows:
+            draft = written.get(row["project_id"])
+            row["draft"] = draft["text"] if draft else ""
+            row["draft_source"] = draft["source"] if draft else ""
+
+        # Counts come from the whole scored set, so a tab badge shows what is
+        # behind it rather than what survived the current view.
+        counts = view_counts(rows, threshold=cfg.threshold, now=now)
+        items = apply_view(rows, view, threshold=cfg.threshold, now=now)[:limit]
 
         candidates = [r for r in items
                       if not r["rejected"] and r["value"] >= cfg.threshold]
@@ -130,6 +140,8 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
             "threshold": cfg.threshold,
             "daily_cap": cfg.daily_cap,
             "items": items,
+            "view": view if view in VIEWS else "all",
+            "views": [{"key": k, **v, "count": counts[k]} for k, v in VIEWS.items()],
             "queued_tokens": sum(r["token"] for r in candidates),
             "candidate_count": len(candidates),
             "sent_today": spent["count"],
