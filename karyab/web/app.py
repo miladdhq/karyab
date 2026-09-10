@@ -21,6 +21,7 @@ from ..config import Config, default_config_path
 from ..store import Store
 from ..api import KarlancerClient
 from ..auto import AutoState, next_action, plan_cycle
+from ..fa import translate_reasons
 from ..views import VIEWS, apply_view, view_counts
 from ..writer.rules import assess, validate
 from .secrets import (
@@ -88,8 +89,13 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
         return Config.load(cfg_path) if cfg_path.exists() else Config.default()
 
     @app.get("/", response_class=HTMLResponse)
-    def index() -> str:
-        return PAGE.read_text(encoding="utf-8")
+    def index() -> HTMLResponse:
+        html = PAGE.read_text(encoding="utf-8")
+        # Stamp the script URL with the file's own mtime: editing app.js
+        # changes the URL, so no browser can serve an old copy.
+        stamp = int((STATIC / "app.js").stat().st_mtime)
+        html = html.replace("/static/app.js", f"/static/app.js?v={stamp}")
+        return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
     @app.get("/static/{name}")
     def static_file(name: str):
@@ -107,7 +113,27 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
         target = (STATIC / name).resolve()
         if not target.is_file() or STATIC.resolve() not in target.parents:
             raise HTTPException(status_code=404, detail="Not found.")
-        return FileResponse(target, headers={"Cache-Control": "public, max-age=604800"})
+
+        # The font never changes and is big, so it caches. The script does
+        # change, and a browser holding a stale copy of a once-broken app.js
+        # looks exactly like the app being broken — which cost days here.
+        if name.endswith(".js"):
+            headers = {"Cache-Control": "no-store, must-revalidate"}
+        else:
+            headers = {"Cache-Control": "public, max-age=604800"}
+        return FileResponse(target, headers=headers)
+
+    @app.get("/favicon.ico")
+    def favicon():
+        """Browsers always ask; a 404 in the console looks like a real fault."""
+        from fastapi.responses import Response
+
+        svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+               '<rect width="32" height="32" rx="7" fill="#1E3A8A"/>'
+               '<text x="16" y="23" font-size="19" text-anchor="middle" '
+               'fill="#C8971B" font-family="serif">ک</text></svg>')
+        return Response(svg, media_type="image/svg+xml",
+                        headers={"Cache-Control": "public, max-age=604800"})
 
     @app.get("/api/health")
     def health():
@@ -140,6 +166,10 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
         # behind it rather than what survived the current view.
         counts = view_counts(rows, threshold=cfg.threshold, now=now)
         items = apply_view(rows, view, threshold=cfg.threshold, now=now)[:limit]
+        # Translated for display only, and only after filtering: the views
+        # match on the English reasons the scorer actually wrote.
+        for item in items:
+            item["reasons"] = translate_reasons(item.get("reasons"))
 
         candidates = [r for r in items
                       if not r["rejected"] and r["value"] >= cfg.threshold]
@@ -307,7 +337,8 @@ def create_app(db_path: str, config_path: Path | None = None) -> FastAPI:
                 "description": row.get("description", ""), "slug": row["slug"],
                 "score": row["value"], "token": row["token"],
                 "min_budget": row["min_budget"], "max_budget": row["max_budget"],
-                "draft": row.get("draft", ""), "reasons": row.get("reasons", []),
+                "draft": row.get("draft", ""),
+                "reasons": translate_reasons(row.get("reasons")),
                 "suggested_amount": suggest_amount(row),
             }
 
