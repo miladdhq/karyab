@@ -26,6 +26,15 @@ BROWSER_CHANNEL = "chrome"
 # EAI_AGAIN. Chromium's own flag is the reliable mechanism.
 LAUNCH_ARGS = {"args": ["--no-proxy-server"]}
 
+
+def _launch_kwargs(headless: bool) -> dict:
+    """Launch options. install.sh sets BROWSER_CHANNEL to None on machines
+    without Chrome, in which case Playwright's own Chromium is used."""
+    kwargs = {"headless": headless, **LAUNCH_ARGS}
+    if BROWSER_CHANNEL:
+        kwargs["channel"] = BROWSER_CHANNEL
+    return kwargs
+
 LOGIN_URL = "https://www.karlancer.com/login"
 PANEL_URL = "https://www.karlancer.com/panel/projects"
 
@@ -69,8 +78,7 @@ def save_session(path: Path | None = None, *, timeout_seconds: int = 300) -> Pat
     target = Path(path) if path else SESSION_PATH
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(channel=BROWSER_CHANNEL, headless=False,
-                                    **LAUNCH_ARGS)
+        browser = p.chromium.launch(**_launch_kwargs(headless=False))
         context = browser.new_context()
         page = context.new_page()
         page.goto(LOGIN_URL, wait_until="domcontentloaded")
@@ -143,8 +151,7 @@ def load_context(playwright, path: Path | None = None, *, headless: bool = True)
             f"No saved session at {target}. Run `karyab login` first."
         )
 
-    browser = playwright.chromium.launch(channel=BROWSER_CHANNEL, headless=headless,
-                                         **LAUNCH_ARGS)
+    browser = playwright.chromium.launch(**_launch_kwargs(headless=headless))
     context = browser.new_context(storage_state=str(target))
     if not _context_is_authenticated(context):
         browser.close()

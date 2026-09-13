@@ -41,5 +41,13 @@ else
   fi
 fi
 
+# Refresh the app-menu entry so it always points at THIS checkout.
+DESK="$HOME/.local/share/applications/karyab.desktop"
+if [ ! -f "$DESK" ] || ! grep -q "Exec=$HERE/karyab-start" "$DESK" 2>/dev/null; then
+  mkdir -p "$(dirname "$DESK")"
+  printf '[Desktop Entry]\nType=Application\nName=کاریاب — Karyab\nComment=Review freelance proposals from karlancer.com\nExec=%s/karyab-start\nIcon=applications-development\nTerminal=false\nCategories=Development;\n' "$HERE" > "$DESK"
+  update-desktop-database "$(dirname "$DESK")" 2>/dev/null || true
+fi
+
 echo "Open: $URL"
 command -v xdg-open >/dev/null && (xdg-open "$URL" >/dev/null 2>&1 &)

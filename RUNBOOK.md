@@ -12,7 +12,7 @@ your applications menu.
 If the page shows a red bar saying it is not responding, wait a few seconds —
 the service restarts itself. If it persists:
 
-    cd ~/dev/karyab
+    cd ~/karyab
     ./karyab-service status     # is it running, and what did it last say
     ./karyab-service logs       # follow the log
     ./karyab-service restart
@@ -95,12 +95,12 @@ re-scan needed.
 If not:
 
     ./karyab-service status
-    tail -40 ~/dev/karyab/.karyab-server.log
+    tail -40 ~/karyab/.karyab-server.log
 
 **"Not logged in" or "session no longer authenticates"** — your Karlancer
 session expired:
 
-    cd ~/dev/karyab && ./karyab-start   # stop it first if running
+    cd ~/karyab
     .venv/bin/karyab login
 
 A browser opens; log in as normal. karyab never sees your password.
@@ -111,7 +111,7 @@ confirm which.
 
 ## Command line, if you prefer it
 
-    cd ~/dev/karyab
+    cd ~/karyab
     .venv/bin/karyab scan --pages 2
     .venv/bin/karyab report --rejected
     .venv/bin/karyab brief --out ~/drafts.json

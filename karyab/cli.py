@@ -92,7 +92,10 @@ def cmd_init(args) -> int:
         print(f"{cfg_path} already exists; refusing to overwrite it.", file=sys.stderr)
         return 1
 
-    profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
+    source = _profile_or_explain(args.profile)
+    if source is None:
+        return 1
+    profile = json.loads(source.read_text(encoding="utf-8"))
     terms = build_vocabulary(profile)
     defaults = Config.default()
 
@@ -100,7 +103,7 @@ def cmd_init(args) -> int:
 # Edit freely. Every value here is a default measured from your own
 # completed projects, not a guess -- see docs/superpowers/specs/.
 
-# Category 6 is برنامه نویسی. All 29 of your completed projects are category 6.
+# Category 6 is برنامه نویسی. Adjust if your completed projects fall elsewhere.
 categories_allow = {list(defaults.categories_allow)}
 categories_block = []
 
@@ -131,7 +134,10 @@ poll_seconds = {defaults.poll_seconds}
 
 
 def cmd_vocab(args) -> int:
-    profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
+    source = _profile_or_explain(args.profile)
+    if source is None:
+        return 1
+    profile = json.loads(source.read_text(encoding="utf-8"))
     terms = build_vocabulary(profile)
     print(to_toml(terms), end="")
     return 0
@@ -379,6 +385,53 @@ def cmd_drafts(args) -> int:
     return 0
 
 
+def cmd_profile(args) -> int:
+    """Fetch your public Karlancer profile so init can build your config."""
+    import json as _json
+
+    from .profile import consolidate, default_profile_path, parse_profile_ref
+
+    try:
+        user_id = parse_profile_ref(args.ref)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    print(f"Reading profile {user_id} from karlancer.com…")
+    try:
+        data = consolidate(None, user_id)
+    except Exception as exc:
+        print(f"Could not read profile {user_id}: {exc}", file=sys.stderr)
+        return 1
+
+    out = Path(args.out) if args.out else default_profile_path()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(_json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    prof = data["profile"]
+    print(f"  {prof.get('username')}: {len(data['completed_projects'])} completed "
+          f"projects, {len(data['reviews'])} reviews, "
+          f"{len(prof.get('skills') or [])} declared skills")
+    for w in data["warnings"]:
+        print(f"  ! {w}", file=sys.stderr)
+    print(f"Saved to {out}")
+    print("Next: karyab init")
+    return 0
+
+
+def _profile_or_explain(path: str | None) -> Path | None:
+    """The profile file to build from, or None with a message printed."""
+    from .profile import default_profile_path
+
+    target = Path(path) if path else default_profile_path()
+    if target.exists():
+        return target
+    print(f"No profile at {target}.", file=sys.stderr)
+    print("Fetch yours first:  karyab profile <your profile id or URL>",
+          file=sys.stderr)
+    return None
+
+
 def main(argv: list[str] | None = None) -> int:
     # `--config` and `--db` must work both before AND after the subcommand
     # (`karyab --config X scan` and `karyab scan --config X`), because users
@@ -414,12 +467,19 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_init = sub.add_parser("init", help="write a config seeded from your profile", parents=[sub_shared])
-    p_init.add_argument("--profile", default="docs/research/profile-65389.json")
+    p_init.add_argument("--profile", default=None,
+                        help="profile file (default: the one `karyab profile` saved)")
     p_init.set_defaults(func=cmd_init)
 
     p_vocab = sub.add_parser("vocab", help="print the skill table for your config", parents=[sub_shared])
-    p_vocab.add_argument("--profile", default="docs/research/profile-65389.json")
+    p_vocab.add_argument("--profile", default=None)
     p_vocab.set_defaults(func=cmd_vocab)
+
+    p_prof = sub.add_parser("profile", parents=[sub_shared],
+                            help="fetch your public profile (first-time setup)")
+    p_prof.add_argument("ref", help="your profile id or URL")
+    p_prof.add_argument("--out", default=None)
+    p_prof.set_defaults(func=cmd_profile)
 
     p_scan = sub.add_parser("scan", help="poll the feed, score it, and report", parents=[sub_shared])
     p_scan.add_argument("--pages", type=int, default=1)

@@ -1,46 +1,92 @@
 # کاریاب / karyab
 
-Watches karlancer.com's public project feed, scores each project against the
-skills you have actually been paid for, and reports what is worth bidding on
-and why.
+A local assistant for freelancers on [karlancer.com](https://www.karlancer.com).
+It watches the public project feed, scores every new project against the work
+you have *actually been paid for*, learns how you write from your own winning
+proposals, and gives you a review page to draft and send from.
 
-Phase 1 is read-only. It makes no LLM calls, drives no browser, and submits
-nothing.
+It never bids for you. Every proposal is sent by your hand, from your account.
 
-## Setup
+## What it does
+
+- **Finds work worth bidding on.** Polls the feed every few minutes and scores
+  each project by skill overlap with your completed projects, budget, freshness
+  and client signals. Rejects are kept with their reasons so you can tune it.
+- **Learns your voice.** Reads your own bid history and keeps the proposals
+  that actually won as writing examples — filtering out the ones that were
+  edited during negotiation, which would otherwise teach it to open a cold
+  pitch with "here is the revised offer".
+- **Checks drafts against your history.** Hard rules that no winning pitch of
+  yours ever broke (no markdown, no em-dashes, sane length) block a draft;
+  soft signals score it.
+- **Gives you a review page** in Persian, right to left, with categories,
+  a token-spend meter, and an auto mode that proposes bids one at a time for
+  your approval.
+
+## Install
+
+Needs Python 3.12+ and Linux. Google Chrome is used if present; otherwise a
+Chromium is downloaded.
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -e .
-.venv/bin/python -m karyab.cli init
+git clone <this repo> ~/karyab
+cd ~/karyab
+./install.sh
 ```
 
-`init` writes a config seeded from your own completed projects. Read the
-`[skills]` table it generates and correct anything that looks wrong — those
-weights decide which projects surface.
-
-karyab talks to karlancer.com directly and deliberately ignores
-`HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY` — karlancer.com is an Iranian
-domestic site, so routing it through a foreign-bound proxy (a SOCKS tunnel
-such as V2Ray, say) is both unnecessary and, with a bare `socks://` scheme,
-an outright crash. If you genuinely need a proxy for this host, pass your
-own `transport=` to `KarlancerClient`.
-
-## Use
+Then, once:
 
 ```bash
-karyab scan --pages 2        # poll, score, store, report
-karyab report --rejected     # what was skipped, and why
-karyab vocab                 # regenerate the skill table
+.venv/bin/karyab profile https://www.karlancer.com/profile/<your id>
+.venv/bin/karyab init
+.venv/bin/karyab login          # a browser opens; log in as normal
 ```
 
-## Tuning
+Open **http://127.0.0.1:8765**. It runs as a background service and restarts
+itself. `RUNBOOK.md` explains the page.
 
-Scores are stored, so re-reading them is free. Edit `config.toml`, run
-`karyab report`, and look at what moved. `--rejected` shows near-misses, which
-is where a missing skill term usually announces itself.
+## Your data stays yours
 
-## Design
+Everything personal lives in `~/.local/share/karyab/` and `~/.config/karyab/`,
+never in this repository:
 
-`docs/superpowers/specs/2026-08-31-karyab-design.md` — the whole system.
-`docs/superpowers/plans/2026-09-01-karyab-phase-1.md` — this phase, task by task.
+| file | what | protection |
+|---|---|---|
+| `session.json` | your Karlancer login | created 0600, never logged |
+| `secrets.json` | your Anthropic API key, if you add one | created 0600, masked in the UI |
+| `karyab.db` | your proposals, scores, drafts | local SQLite |
+| `profile.json` | your public profile snapshot | — |
+
+The review page binds to `127.0.0.1` only and refuses to listen on a network
+address without an explicit flag, because it holds your credentials and has no
+login of its own.
+
+## Writing proposals
+
+karyab does not need an AI key to be useful. `karyab brief` exports a briefing
+file — the client's own words, the rules measured from your history, and your
+three closest winning proposals — which you can hand to any assistant, or
+write from yourself. `karyab drafts` reads the answers back and checks them.
+
+If you add an Anthropic key in the settings page, drafts can be generated
+directly.
+
+## Honest limits
+
+- It only reads Karlancer's public JSON endpoints, which are undocumented and
+  could change. When they do, `scan` will fail loudly rather than silently
+  return nothing.
+- Nobody can see how many others have bid on a project — the field exists but
+  is always empty. Speed is the only edge, which is why the **تازه‌ترین** tab
+  ignores the score.
+- The writing rules come from one freelancer's 15 winning pitches. They are
+  a starting point, not a law; the config is yours to change.
+
+## Development
+
+```bash
+.venv/bin/python -m pytest -q      # ~270 tests, under 3 seconds, no network
+```
+
+Design and decisions are in `docs/superpowers/specs/`. The scoring modules
+under `karyab/scoring/` are pure functions with no I/O, on purpose.
