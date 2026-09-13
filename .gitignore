@@ -9,3 +9,4 @@ secrets.json
 session.json
 .karyab.pid
 .karyab-server.log
+*.egg-info/
