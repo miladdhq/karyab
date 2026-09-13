@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>کاریاب</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  /* One variable face across 100-900. The system install registers each
+     weight as a separate family, so asking for weight 900 of "Vazirmatn"
+     silently gets a synthesised bold. */
+  @font-face{
+    font-family:"Vazirmatn";
+    src:url("/static/Vazirmatn-NL%5Bwght%5D.ttf") format("truetype-variations"),
+        url("/static/Vazirmatn-NL%5Bwght%5D.ttf") format("truetype");
+    font-weight:100 900; font-style:normal; font-display:swap;
+  }
+  :root{
+    /* Persian illumination, held back: lapis structures, saffron is reserved
+       for the one thing that is genuinely scarce — bid tokens. */
+    --paper:#F7F7F4; --card:#FFFFFF; --ink:#16171C; --muted:#6B6F76;
+    --line:#E3E2DC; --lapis:#1E3A8A; --lapis-soft:#EDF0FA;
+    --saffron:#C8971B; --saffron-soft:#FBF3DE; --clay:#A2412F;
+    --ok:#2F6B4F;
+    --mono:"DejaVu Sans Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"Vazirmatn",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .num{font-family:var(--mono); font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:embed}
+
+  /* ---- masthead + the token meter, the one loud element ---- */
+  header{
+    border-bottom:1px solid var(--line); background:var(--card);
+    position:sticky; top:0; z-index:10;
+  }
+  .bar{max-width:1180px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:22px}
+  .wordmark{font-weight:900;font-size:20px;letter-spacing:-.01em}
+  .wordmark span{color:var(--lapis)}
+  nav{margin-inline-start:auto;display:flex;gap:4px}
+  nav button{
+    font:inherit;font-size:14px;border:0;background:none;color:var(--muted);
+    padding:7px 14px;border-radius:7px;cursor:pointer
+  }
+  nav button:hover{background:var(--paper);color:var(--ink)}
+  nav button[aria-current="true"]{background:var(--lapis-soft);color:var(--lapis);font-weight:700}
+
+  .meter{display:flex;align-items:center;gap:10px;padding:5px 12px;
+    background:var(--saffron-soft);border:1px solid #EFE0BC;border-radius:999px}
+  .meter .track{width:78px;height:7px;background:#EFE2C2;border-radius:99px;overflow:hidden}
+  .meter .fill{height:100%;background:var(--saffron);border-radius:99px;transition:width .4s ease}
+  .meter .label{font-size:12.5px;color:#7A5B10;white-space:nowrap}
+
+  main{max-width:1180px;margin:0 auto;padding:26px 22px 80px}
+  .lede{color:var(--muted);font-size:14px;margin:0 0 20px}
+
+  /* ---- the decision bench ---- */
+  .item{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    margin-bottom:16px;overflow:hidden}
+  .item.is-open{border-color:#C9CEE4;box-shadow:0 1px 3px rgba(30,58,138,.07)}
+  .head{display:flex;gap:16px;align-items:flex-start;padding:16px 18px;cursor:pointer}
+  .score{
+    flex:0 0 auto;width:52px;height:52px;border-radius:10px;display:grid;place-items:center;
+    background:var(--lapis-soft);color:var(--lapis);font-weight:900;font-size:19px
+  }
+  .score.below{background:#F1F1EE;color:var(--muted)}
+  .score.rej{background:#F7EDEA;color:var(--clay)}
+  .title{font-weight:700;font-size:16.5px;margin:0 0 5px;line-height:1.5}
+  .facts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+  .cost{color:#7A5B10;background:var(--saffron-soft);border-radius:5px;padding:1px 8px;font-weight:700}
+  .why{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .why span{font-size:12px;background:var(--paper);border:1px solid var(--line);
+    border-radius:6px;padding:2px 9px;color:#4C5058}
+
+  .body{display:none;border-top:1px solid var(--line)}
+  .item.is-open .body{display:grid;grid-template-columns:1fr 1fr}
+  .pane{padding:18px}
+  .pane + .pane{border-inline-start:1px solid var(--line)}
+  .pane h3{margin:0 0 10px;font-size:12px;letter-spacing:.09em;color:var(--muted);font-weight:700}
+  .brief{white-space:pre-wrap;font-size:14.5px;color:#33363D;max-height:260px;overflow:auto}
+  textarea{
+    width:100%;min-height:170px;font:inherit;font-size:15px;line-height:1.8;
+    padding:13px;border:1px solid var(--line);border-radius:9px;background:var(--paper);
+    resize:vertical;color:var(--ink)
+  }
+  textarea:focus{outline:2px solid var(--lapis);outline-offset:1px;background:var(--card)}
+  .verdict{margin-top:10px;font-size:13px;min-height:22px}
+  .verdict .bad{color:var(--clay)} .verdict .good{color:var(--ok)}
+  .verdict ul{margin:5px 0 0;padding-inline-start:18px}
+  .actions{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+  button.act{font:inherit;font-size:14px;font-weight:700;border-radius:8px;
+    padding:9px 18px;cursor:pointer;border:1px solid transparent}
+  .send{background:var(--lapis);color:#fff}
+  .send:disabled{background:#C3C7D6;cursor:not-allowed}
+  .skip{background:var(--card);border-color:var(--line);color:var(--muted)}
+  .skip:hover{border-color:var(--clay);color:var(--clay)}
+  .done{background:var(--saffron-soft);border-color:#EFE0BC;color:#7A5B10}
+  .done:hover{background:var(--saffron);color:#fff;border-color:var(--saffron)}
+  .applied-row{background:var(--card);border:1px solid var(--line);border-radius:11px;
+    padding:14px 17px;margin-bottom:11px;display:flex;gap:15px;align-items:flex-start}
+  .applied-row .when{flex:0 0 auto;font-size:12.5px;color:var(--muted);min-width:96px}
+  .applied-row .sent{font-size:14px;color:#33363D;margin-top:6px;white-space:pre-wrap}
+  .applied-row .cost{flex:0 0 auto}
+
+  /* ---- settings ---- */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:22px;max-width:660px}
+  .panel h2{margin:0 0 4px;font-size:17px}
+  .panel p{margin:0 0 16px;color:var(--muted);font-size:14px}
+  .field{display:flex;gap:9px;flex-wrap:wrap}
+  input[type=password],input[type=text]{
+    flex:1;min-width:250px;font:inherit;padding:10px 13px;border:1px solid var(--line);
+    border-radius:8px;background:var(--paper);direction:ltr;text-align:left;
+    font-family:var(--mono);font-size:13px
+  }
+  input:focus{outline:2px solid var(--lapis);outline-offset:1px;background:var(--card)}
+  .state{margin-top:14px;padding:11px 14px;border-radius:8px;font-size:13.5px;display:none}
+  .state.on{display:block}
+  .state.ok{background:#EDF4EF;color:var(--ok)}
+  .state.err{background:#F9EEEB;color:var(--clay)}
+  .note{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:13px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .views{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px}
+  .vtab{font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--card);
+    color:var(--muted);border-radius:999px;padding:6px 14px;cursor:pointer;
+    display:flex;align-items:center;gap:7px;transition:all .15s}
+  .vtab:hover{border-color:var(--lapis);color:var(--lapis)}
+  .vtab[aria-current="true"]{background:var(--lapis);border-color:var(--lapis);
+    color:#fff;font-weight:700}
+  .vtab .n{font-family:var(--mono);font-size:11.5px;opacity:.75}
+  .viewhint{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .toggle{display:flex;gap:7px;align-items:center;font-size:13.5px;color:var(--muted);cursor:pointer}
+  .busy{font-size:13px;color:var(--lapis)}
+  .busy::after{content:"…";animation:dots 1.2s steps(4,end) infinite}
+  @keyframes dots{0%{content:"."}33%{content:".."}66%{content:"..."}}
+  .brief-box{margin-top:12px;padding:12px;background:var(--paper);border:1px solid var(--line);
+    border-radius:9px;font-size:12.5px;white-space:pre-wrap;max-height:220px;overflow:auto;
+    direction:ltr;text-align:left;font-family:var(--mono);line-height:1.6;display:none}
+  .brief-box.on{display:block}
+  .tiny{font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--card);
+    color:var(--muted);border-radius:7px;padding:5px 11px;cursor:pointer}
+  .tiny:hover{border-color:var(--lapis);color:var(--lapis)}
+  .saved{font-size:12.5px;color:var(--ok);opacity:0;transition:opacity .3s}
+  .saved.on{opacity:1}
+  .autobtn{display:flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;
+    border:1px solid var(--line);cursor:pointer;font-size:13.5px;user-select:none;
+    background:var(--card);color:var(--muted);transition:all .2s}
+  .autobtn:hover{border-color:var(--lapis)}
+  .autobtn.on{background:var(--lapis);border-color:var(--lapis);color:#fff;font-weight:700}
+  .autobtn input{accent-color:var(--lapis);margin:0}
+
+  .sheet{position:fixed;inset:0;background:rgba(20,22,28,.45);display:none;
+    place-items:center;padding:22px;z-index:50}
+  .sheet.on{display:grid}
+  .sheet-card{background:var(--card);border-radius:15px;max-width:660px;width:100%;
+    max-height:88vh;overflow:auto;box-shadow:0 18px 50px rgba(20,22,28,.28)}
+  .sheet-head{padding:20px 24px 0}
+  .sheet-head h2{margin:0 0 4px;font-size:18px}
+  .sheet-head .facts{margin-bottom:4px}
+  .sheet-body{padding:16px 24px 22px}
+  .sheet-body h3{margin:16px 0 7px;font-size:12px;letter-spacing:.09em;
+    color:var(--muted);font-weight:700}
+  .sheet-foot{display:flex;gap:9px;padding:0 24px 22px;flex-wrap:wrap}
+  .warn{background:var(--saffron-soft);border:1px solid #EFE0BC;color:#7A5B10;
+    border-radius:9px;padding:12px 15px;font-size:13.5px;line-height:1.7}
+  .info-list{margin:0;padding-inline-start:19px;font-size:14px;line-height:1.85}
+  .info-list b{color:var(--ink)}
+  .amount{width:100%;font:inherit;font-size:16px;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:var(--paper);font-family:var(--mono);direction:ltr;text-align:left}
+  .amount:focus{outline:2px solid var(--lapis);outline-offset:1px;background:var(--card)}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .down{background:#F9EEEB;color:var(--clay);border-bottom:1px solid #EBD5CF;
+    padding:10px 22px;font-size:13.5px;text-align:center}
+  .empty{text-align:center;padding:70px 20px;color:var(--muted)}
+  .empty code{background:var(--card);border:1px solid var(--line);border-radius:6px;
+    padding:2px 8px;font-family:var(--mono);font-size:13px;direction:ltr;display:inline-block}
+  [hidden]{display:none!important}
+  @media (max-width:820px){ .item.is-open .body{grid-template-columns:1fr}
+    .pane + .pane{border-inline-start:0;border-top:1px solid var(--line)} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="wordmark">کار<span>یاب</span></div>
+    <div class="meter" id="meter" title="هزینه‌ی ژتونیِ کاندیداهای صف">
+      <span class="label">صف امروز</span>
+      <span class="track"><span class="fill" id="meterFill" style="width:0%"></span></span>
+      <span class="label num" id="meterText">0 / 0</span>
+    </div>
+    <label class="autobtn" id="autoBtn">
+      <input type="checkbox" id="autoOn">
+      <span>حالت خودکار</span>
+    </label>
+    <nav>
+      <button id="tabQueue" aria-current="true">صف بررسی</button>
+      <button id="tabApplied">ارسال‌شده‌ها</button>
+      <button id="tabSettings">تنظیمات</button>
+    </nav>
+  </div>
+</header>
+
+<div id="down" class="down" hidden>
+  کاریاب پاسخ نمی‌دهد. سرویس خودش تا چند ثانیه بالا می‌آید؛ اگر نیامد در ترمینال
+  <span class="num">./karyab-service status</span> را ببینید.
+</div>
+
+<main>
+  <section id="viewQueue">
+    <div class="toolbar">
+      <button class="act send" id="btnScan">جستجوی پروژه‌های تازه</button>
+      <button class="act skip" id="btnHarvest">به‌روزرسانی سوابق</button>
+      <span class="busy" id="busy" hidden></span>
+    </div>
+    <div class="views" id="views"></div>
+    <p class="viewhint" id="viewHint"></p>
+    <p class="lede" id="queueLede">در حال بارگذاری…</p>
+    <div id="list"></div>
+  </section>
+
+  <section id="viewApplied" hidden>
+    <p class="lede" id="appliedLede">در حال بارگذاری…</p>
+    <div id="appliedList"></div>
+  </section>
+
+  <section id="viewSettings" hidden>
+    <div class="panel">
+      <h2>کلید API انتخاب‌شده</h2>
+      <p>برای نوشتن پیشنهادها به کلید Anthropic نیاز است. کلید فقط روی همین دستگاه
+         ذخیره می‌شود، با دسترسی ۰۶۰۰، و هرگز جایی جز خود Anthropic فرستاده نمی‌شود.</p>
+      <div class="field">
+        <input id="keyInput" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <button class="act send" id="keySave">ذخیره</button>
+        <button class="act skip" id="keyTest">آزمایش</button>
+        <button class="act skip" id="keyClear">حذف</button>
+      </div>
+      <div class="state" id="keyState"></div>
+      <div class="note">
+        وضعیت فعلی: <b class="num" id="keyMask">—</b><br>
+        کلید را از <span class="num">console.anthropic.com</span> بردارید.
+        این صفحه فقط روی <span class="num">127.0.0.1</span> اجرا می‌شود و رمز ورود ندارد؛
+        اگر آن را روی شبکه باز کنید، هرکسی روی همان شبکه می‌تواند از اعتبار شما خرج کند.
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="sheet" id="autoInfo">
+  <div class="sheet-card">
+    <div class="sheet-head"><h2>حالت خودکار</h2></div>
+    <div class="sheet-body">
+      <ul class="info-list">
+        <li>هر چند دقیقه خودش <b>پروژه‌های تازه را می‌گیرد</b> و امتیاز می‌دهد.</li>
+        <li>برای بهترین کاندیدا <b>یک پنجره باز می‌کند</b>: پروژه چیست، متن پیشنهاد چه
+            نوشته شده، و چند ژتون خرج می‌شود.</li>
+        <li>متن را همان‌جا می‌توانید <b>ویرایش کنید</b>؛ چیزی که تایید کنید همان چیزی است
+            که فرستاده می‌شود.</li>
+        <li>بدون تایید شما <b>هیچ پیشنهادی ارسال نمی‌شود</b>.</li>
+        <li>سقف روزانه از تایید هم بالاتر است؛ به سقف که برسد متوقف می‌شود.</li>
+      </ul>
+      <div class="warn" style="margin-top:16px">
+        ثبت پیشنهاد در کارلنسر یک <b>خرید</b> است (برنزی، نقره‌ای، طلایی) نه یک فرم ساده.
+        کاریاب متن را آماده و صفحه‌ی خرید را باز می‌کند، اما روی دکمه‌ی پرداخت
+        <b>خودش کلیک نمی‌کند</b> — انتخاب سطح و خرج کردن پول با شماست.
+      </div>
+      <div class="note" style="margin-top:14px">
+        با خاموش کردن حالت خودکار، همه‌ی تاییدهای معلق هم پاک می‌شوند.
+        این حالت با هر بار اجرای دوباره‌ی کاریاب خاموش شروع می‌شود.
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="act send" id="autoStart">روشن کن</button>
+      <button class="act skip" id="autoCancel">بی‌خیال</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="approve">
+  <div class="sheet-card">
+    <div class="sheet-head">
+      <h2 id="apTitle">—</h2>
+      <div class="facts">
+        <span class="num" id="apBudget"></span>
+        <span class="cost num" id="apToken"></span>
+        <span class="num" id="apScore"></span>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h3>شرح کارفرما</h3>
+      <div class="brief" id="apBrief" style="max-height:150px"></div>
+      <h3>مبلغ پیشنهادی (تومان)</h3>
+      <input type="number" id="apAmount" class="amount" placeholder="مثلا ۲۵۰۰۰۰۰">
+      <div class="hint" id="apHint"></div>
+      <input type="hidden" id="apSlug">
+      <h3>متنی که فرستاده می‌شود</h3>
+      <textarea id="apDraft" style="min-height:150px"></textarea>
+      <div class="verdict" id="apVerdict"></div>
+    </div>
+    <div class="sheet-foot">
+      <button class="act send" id="apApprove">تایید و باز کردن صفحه‌ی ثبت</button>
+      <button class="act skip" id="apSkip">این یکی نه</button>
+      <button class="act skip" id="apLater">بعدا</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

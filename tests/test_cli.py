@@ -185,3 +185,15 @@ def test_unknown_command_exits_nonzero(capsys):
         main(["nonsense"])
     except SystemExit as exc:
         assert exc.code != 0
+
+
+def test_matched_terms_recovers_skills_from_a_reason_line():
+    from karyab.cli import matched_terms
+    assert matched_terms(["base", "skill match: bot, telegram bot", "detailed brief"]) == (
+        "bot", "telegram bot")
+
+
+def test_matched_terms_is_empty_when_nothing_matched():
+    from karyab.cli import matched_terms
+    assert matched_terms(["base", "no skill term matched"]) == ()
+    assert matched_terms([]) == ()

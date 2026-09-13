@@ -5,3 +5,8 @@ __pycache__/
 .pytest_cache/
 *.db
 .coverage
+secrets.json
+session.json
+.karyab.pid
+.karyab-server.log
+*.egg-info/

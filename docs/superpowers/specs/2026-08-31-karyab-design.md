@@ -273,33 +273,93 @@ pauses submission and asks for a fresh login rather than retrying blindly.
 
 The product is the proposal. These rules are requirements, not style advice.
 
-**Every proposal contains three things:**
+**Measured on 2026-09-02 against the user's own 312 sent proposals.** The
+rules below are no longer a guess about what reads as human; they are what
+actually converted for this user on this platform. The original three-part
+rule is superseded — see "What the bid history actually says" below.
 
-1. **A specific detail lifted from the project description.** Proof a person
-   read it. Generic praise for the project does not satisfy this.
-2. **One named real thing the user built, with a link.** Proof of the claim.
-   "ساختم" beats "می‌توانم".
-3. **One sharp question about the brief.** Only someone who understood the work
-   asks a good question, and a question invites a reply — which the user's own
-   chat history identifies as the step that converts.
+**Every proposal contains:**
 
-**Banned outright:** generic openers of the "سلام، می‌تونم این پروژه رو انجام
-بدم" family; skill-list dumps; self-superlatives; "بهترین کیفیت و کمترین قیمت";
-any promise the user has not made.
+1. **An invitation to open the conversation.** The strongest signal in the
+   data: 46% of winning pitches invite the client to open a chat
+   ("لطفا گفت و گو رو باز کنید"), against 18% of declined ones. It is an
+   invitation, never a question — question marks show no useful lift (13% of
+   wins, 20% of declines).
+2. **A specific technical claim about how the work would be done.** Second
+   strongest: 60% of wins name a concrete technology, against 33% of declines.
+   The best example in the corpus proposes React Native so one codebase ships
+   web, Android and iOS, and says why that is cheaper for the client.
+3. **Engagement with the client's actual idea**, where there is one to engage
+   with — 13% of wins open by reacting to the idea itself ("ایده جالبی هست")
+   against 3% of declines. Small counts; treat as a lead.
 
-**Variance is enforced mechanically.** Each draft is assigned a shape — direct,
-question-led, evidence-led, or plan-led — and a length band, and may not repeat
-the previous draft's shape. Uniform structure across many proposals is the
-loudest machine tell, and it is a property of the batch, so it cannot be fixed
-by making any single proposal better.
+**Banned outright:** an explicit price or timeline in the opening pitch (6% of
+wins state one, 15% of declines); skill-list dumps; self-superlatives;
+"بهترین کیفیت و کمترین قیمت"; any promise the user has not made.
 
-**Register.** Conversational-professional Persian. 60–160 words; longer reads
-as copy-paste. No em-dashes, no translated-English syntax, no markdown
-formatting in the proposal body.
+**Length is NOT the separator it first appeared to be.** An earlier pass put
+winning pitches at 28 words against 39 for declines. That gap was largely an
+artifact of a too-narrow negotiation filter: short handover messages
+("here you go", "offer registered, hit hire") were being counted as winning
+pitches. With the filter corrected, the medians are 32 against 37 and the p75s
+are 69 against 68 — essentially no separation at the long end. Keep proposals
+short because a long one reads as copy-paste, not because the data says
+length wins. It does not.
+
+**Retained from the original rules**, because they remain sound and the data
+neither confirms nor refutes them at this sample size: no em-dashes, no
+translated-English syntax, no markdown in the proposal body, and enforced
+shape variance across a batch so fifty proposals do not share one skeleton.
 
 **Validation before queueing.** A draft that fails a structural check — missing
 question, missing evidence, out of length band, contains a banned phrase — is
 regenerated rather than queued.
+
+## What the bid history actually says
+
+Harvested 2026-09-02 from `/api/bids/`: 312 proposals — 214 pending, 67
+declined, 29 completed, 2 failed. The 29 completions match the profile's
+completed-project count exactly.
+
+**A confound that had to be removed first, twice.** A bid's `description` is
+editable, and the user edits it during negotiation, so the text stored against
+a *won* bid is often the final negotiated message rather than the opening
+pitch. Training a writer on those teaches it to open a cold proposal with
+"here is the offer, you can hire me".
+
+The first filter caught 8 of them and left 21 samples. Auditing all 21 by hand
+found **six more** it had missed — including a 13-word "here you go, I added
+those two days just to be safe". The marker list was widened from those six
+real examples, and each is now a regression test. The corpus is 15 clean
+winning pitches against 65 declined ones.
+
+That second pass mattered: it moved the headline finding. The dirty corpus
+showed winners at 28 words against 39, which looked like a decisive length
+effect. The clean corpus shows 32 against 37, with identical p75s — the
+"effect" was mostly the short handover messages. The real separators turned
+out to be *what the pitch does*, not how long it is.
+
+**Measured on the clean corpus (15 wins, 65 declines):**
+
+| signal | wins | declines |
+|---|---|---|
+| invites opening a conversation | 46% | 18% |
+| names a specific technology | 60% | 33% |
+| engages with the client's idea | 13% | 3% |
+| states price or timeline upfront | 6% | 15% |
+| contains a question mark | 13% | 20% |
+| median length | 32 words | 37 words |
+
+**No `updated_at` field is exposed**, so edits cannot be detected directly. The
+marker list in `karyab/harvest.py` is the available proxy, it lives in the code
+rather than in an analysis script, and every entry came from auditing real
+samples rather than from guessing.
+
+**Sample-size caveat, stated plainly:** 15 winning pitches. The two strong
+signals are ~7 samples against ~12 — wide percentage gaps built on small
+counts. They are the best evidence available and far better than the invented
+rules they replaced, but Phase 4's outcome tracking is what will confirm or
+overturn them. Nothing here should be treated as settled.
 
 ## Pricing
 
@@ -372,9 +432,11 @@ Phase 1 is the subject of the first implementation plan.
 
 ## Open questions
 
-- Whether the three-part proposal rule survives contact with the harvested
-  data. If the user's winning messages are consistently shorter and blunter,
-  the rule bends to the evidence.
+- ~~Whether the three-part proposal rule survives contact with the harvested
+  data.~~ **Answered 2026-09-02: it did not.** The user's winning pitches are
+  far shorter than the rule assumed (28 words median, not 60-160), invite a
+  conversation instead of asking a question, and omit the price. The rule has
+  been rewritten from the measured data.
 - Whether to keep the sweet-spot band on by default. The evidence supports it,
   but it is the user's business decision how much weight to give a six-project
   sample, and the band is one config line either way.

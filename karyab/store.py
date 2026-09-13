@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS projects (
     id             INTEGER PRIMARY KEY,
     user_id        INTEGER NOT NULL DEFAULT 0,
     title          TEXT    NOT NULL DEFAULT '',
+    description    TEXT    NOT NULL DEFAULT '',
     slug           TEXT    NOT NULL DEFAULT '',
     category_id    INTEGER NOT NULL DEFAULT 0,
     min_budget     INTEGER NOT NULL DEFAULT 0,
@@ -45,6 +46,53 @@ CREATE TABLE IF NOT EXISTS scores (
 );
 
 CREATE INDEX IF NOT EXISTS scores_by_value ON scores(value DESC);
+
+-- The user's own sent proposals, with what became of each. This is the
+-- corpus a proposal writer learns their voice from, so it is kept whole:
+-- losing pitches are as informative as winning ones.
+CREATE TABLE IF NOT EXISTS voice_samples (
+    bid_id           INTEGER PRIMARY KEY,
+    project_id       INTEGER NOT NULL DEFAULT 0,
+    text             TEXT    NOT NULL DEFAULT '',
+    outcome          TEXT    NOT NULL DEFAULT 'unknown',
+    is_opening_pitch INTEGER NOT NULL DEFAULT 0,
+    word_count       INTEGER NOT NULL DEFAULT 0,
+    budget           INTEGER NOT NULL DEFAULT 0,
+    duration         INTEGER NOT NULL DEFAULT 0,
+    token            INTEGER NOT NULL DEFAULT 0,
+    created_at       TEXT,
+    project_title    TEXT    NOT NULL DEFAULT '',
+    category_id      INTEGER NOT NULL DEFAULT 0,
+    project_skills   TEXT    NOT NULL DEFAULT '[]',
+    harvested_at     TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS voice_by_outcome ON voice_samples(outcome, is_opening_pitch);
+
+-- Projects a bid was actually sent on. Recorded separately from `drafts`
+-- because a draft is work in progress and an application is a spend: it
+-- costs tokens, it cannot be taken back on Karlancer's side, and it is the
+-- only honest basis for reporting what the tool has cost.
+CREATE TABLE IF NOT EXISTS applied (
+    project_id  INTEGER PRIMARY KEY,
+    applied_at  TEXT    NOT NULL,
+    token       INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (project_id) REFERENCES projects(id)
+);
+
+CREATE INDEX IF NOT EXISTS applied_by_date ON applied(applied_at DESC);
+
+-- Proposals drafted for a project but not yet sent. One per project: a
+-- redraft replaces the previous attempt rather than piling up.
+CREATE TABLE IF NOT EXISTS drafts (
+    project_id  INTEGER PRIMARY KEY,
+    text        TEXT    NOT NULL,
+    source      TEXT    NOT NULL DEFAULT 'session',
+    score       INTEGER NOT NULL DEFAULT 0,
+    blocking    TEXT    NOT NULL DEFAULT '[]',
+    written_at  TEXT    NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES projects(id)
+);
 """
 
 
@@ -56,6 +104,12 @@ class Store:
         self._db.row_factory = sqlite3.Row
         self._db.execute("PRAGMA foreign_keys = ON")
         self._db.executescript(SCHEMA)
+        # Databases created before the review dashboard have no description
+        # column; adding it is cheap and keeps old scans readable.
+        cols = {r[1] for r in self._db.execute("PRAGMA table_info(projects)")}
+        if "description" not in cols:
+            self._db.execute(
+                "ALTER TABLE projects ADD COLUMN description TEXT NOT NULL DEFAULT ''")
         self._db.commit()
 
     def __enter__(self) -> "Store":
@@ -82,11 +136,12 @@ class Store:
         self._db.execute(
             """
             INSERT INTO projects
-                (id, user_id, title, slug, category_id,
+                (id, user_id, title, description, slug, category_id,
                  min_budget, max_budget, token, skills, first_seen_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
-                title      = excluded.title,
+                title       = excluded.title,
+                description = excluded.description,
                 max_budget = excluded.max_budget,
                 min_budget = excluded.min_budget,
                 token      = excluded.token,
@@ -96,6 +151,7 @@ class Store:
                 project.id,
                 project.user_id,
                 project.title,
+                project.description,
                 project.slug,
                 project.category_id,
                 project.min_budget,
@@ -146,10 +202,12 @@ class Store:
         rows = self._db.execute(
             """
             SELECT s.project_id, s.stage, s.value, s.rejected, s.reasons,
-                   s.scored_at, p.title, p.slug, p.min_budget, p.max_budget,
+                   s.scored_at, p.title, p.description, p.slug,
+                   p.min_budget, p.max_budget,
                    p.token, p.category_id, p.first_seen_at
             FROM scores s
             JOIN projects p ON p.id = s.project_id
+            WHERE s.project_id NOT IN (SELECT project_id FROM applied)
             ORDER BY s.value DESC, s.scored_at DESC
             LIMIT ?
             """,
@@ -165,6 +223,7 @@ class Store:
                 "reasons": json.loads(r["reasons"]),
                 "scored_at": r["scored_at"],
                 "title": r["title"],
+                "description": r["description"],
                 "slug": r["slug"],
                 "min_budget": r["min_budget"],
                 "max_budget": r["max_budget"],
@@ -174,3 +233,201 @@ class Store:
             }
             for r in rows
         ]
+
+    # ---- voice corpus -----------------------------------------------------
+
+    def save_voice_samples(self, samples, now: datetime) -> int:
+        """Store harvested proposals. Re-harvesting updates, never duplicates."""
+        stamp = now.isoformat()
+        count = 0
+        for s in samples:
+            self._db.execute(
+                """
+                INSERT INTO voice_samples
+                    (bid_id, project_id, text, outcome, is_opening_pitch,
+                     word_count, budget, duration, token, created_at,
+                     project_title, category_id, project_skills, harvested_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(bid_id) DO UPDATE SET
+                    text             = excluded.text,
+                    outcome          = excluded.outcome,
+                    is_opening_pitch = excluded.is_opening_pitch,
+                    word_count       = excluded.word_count,
+                    budget           = excluded.budget,
+                    project_title    = excluded.project_title,
+                    project_skills   = excluded.project_skills,
+                    harvested_at     = excluded.harvested_at
+                """,
+                (
+                    s.bid_id, s.project_id, s.text, s.outcome.value,
+                    1 if s.is_opening_pitch else 0, s.word_count, s.budget,
+                    s.duration, s.token,
+                    s.created_at.isoformat() if s.created_at else None,
+                    s.project_title, s.category_id,
+                    json.dumps(list(s.project_skills), ensure_ascii=False), stamp,
+                ),
+            )
+            count += 1
+        self._db.commit()
+        return count
+
+    @staticmethod
+    def _voice_row(r) -> dict:
+        return {
+            "bid_id": r["bid_id"], "project_id": r["project_id"],
+            "text": r["text"], "outcome": r["outcome"],
+            "is_opening_pitch": bool(r["is_opening_pitch"]),
+            "word_count": r["word_count"], "budget": r["budget"],
+            "duration": r["duration"], "token": r["token"],
+            "created_at": r["created_at"], "project_title": r["project_title"],
+            "category_id": r["category_id"],
+            "project_skills": json.loads(r["project_skills"]),
+        }
+
+    def voice_samples(self, limit: int = 500) -> list[dict]:
+        rows = self._db.execute(
+            "SELECT * FROM voice_samples ORDER BY created_at DESC LIMIT ?", (limit,)
+        ).fetchall()
+        return [self._voice_row(r) for r in rows]
+
+    def teachable_samples(self, match_skills=(), limit: int = 3) -> list[dict]:
+        """Winning cold pitches, most relevant first.
+
+        Only wins that are genuine opening pitches qualify: a won bid whose
+        text was rewritten mid-negotiation would teach a writer to open a cold
+        proposal with a follow-up message.
+
+        Relevance is skill overlap with the target project, but an unmatched
+        project still gets examples — a writer with no voice reference at all
+        falls back on generic LLM register, which is the exact failure mode
+        this corpus exists to prevent.
+        """
+        rows = self._db.execute(
+            """
+            SELECT * FROM voice_samples
+            WHERE outcome = 'won' AND is_opening_pitch = 1
+            ORDER BY word_count DESC
+            """
+        ).fetchall()
+        samples = [self._voice_row(r) for r in rows]
+
+        wanted = {s.lower() for s in match_skills}
+        if wanted:
+            def overlap(sample: dict) -> int:
+                have = {s.lower() for s in sample["project_skills"]}
+                title = sample["project_title"].lower()
+                return len(wanted & have) + sum(1 for w in wanted if w in title)
+
+            samples.sort(key=lambda s: (-overlap(s), -s["word_count"]))
+        return samples[:limit]
+
+    def voice_stats(self) -> dict:
+        rows = self.voice_samples(limit=10_000)
+        won = [r for r in rows if r["outcome"] == "won"]
+        teachable = [r for r in won if r["is_opening_pitch"]]
+        declined = [r for r in rows
+                    if r["outcome"] == "declined" and r["is_opening_pitch"]]
+
+        def median(values: list[int]) -> int:
+            v = sorted(values)
+            return v[len(v) // 2] if v else 0
+
+        return {
+            "total": len(rows),
+            "won": len(won),
+            "teachable": len(teachable),
+            "declined_pitches": len(declined),
+            "median_won_words": median([r["word_count"] for r in teachable]),
+            "median_declined_words": median([r["word_count"] for r in declined]),
+        }
+
+    # ---- drafts ------------------------------------------------------------
+
+    def save_draft(self, project_id: int, text: str, now: datetime,
+                   *, source: str = "session", score: int = 0,
+                   blocking: list[str] | None = None) -> None:
+        self._db.execute(
+            """
+            INSERT INTO drafts (project_id, text, source, score, blocking, written_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(project_id) DO UPDATE SET
+                text       = excluded.text,
+                source     = excluded.source,
+                score      = excluded.score,
+                blocking   = excluded.blocking,
+                written_at = excluded.written_at
+            """,
+            (project_id, text, source, int(score),
+             json.dumps(blocking or [], ensure_ascii=False), now.isoformat()),
+        )
+        self._db.commit()
+
+    def drafts(self) -> dict[int, dict]:
+        rows = self._db.execute("SELECT * FROM drafts").fetchall()
+        return {
+            r["project_id"]: {
+                "text": r["text"], "source": r["source"], "score": r["score"],
+                "blocking": json.loads(r["blocking"]), "written_at": r["written_at"],
+            }
+            for r in rows
+        }
+
+    # ---- applications ------------------------------------------------------
+
+    def mark_applied(self, project_id: int, now: datetime) -> None:
+        """Record that a bid was sent, freezing its token cost at that moment.
+
+        The token cost is copied from the project rather than joined at read
+        time: Karlancer can re-price a listing, but what the bid actually cost
+        is fixed once it is sent.
+
+        Marking an already-applied project is a no-op — the first application
+        is the real one, and moving the timestamp would corrupt spend reports.
+        """
+        row = self._db.execute(
+            "SELECT token FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+        if row is None:
+            return  # nothing known about this project; nothing to record
+
+        self._db.execute(
+            """
+            INSERT INTO applied (project_id, applied_at, token)
+            VALUES (?, ?, ?)
+            ON CONFLICT(project_id) DO NOTHING
+            """,
+            (project_id, now.isoformat(), row["token"]),
+        )
+        self._db.commit()
+
+    def unmark_applied(self, project_id: int) -> None:
+        """Undo a mistaken mark. Without this a misclick hides a project forever."""
+        self._db.execute("DELETE FROM applied WHERE project_id = ?", (project_id,))
+        self._db.commit()
+
+    def applied(self, limit: int = 200) -> list[dict]:
+        rows = self._db.execute(
+            """
+            SELECT a.project_id, a.applied_at, a.token,
+                   p.title, p.slug, p.min_budget, p.max_budget, p.category_id,
+                   COALESCE(d.text, '') AS draft
+            FROM applied a
+            JOIN projects p ON p.id = a.project_id
+            LEFT JOIN drafts d ON d.project_id = a.project_id
+            ORDER BY a.applied_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    def spend_since(self, since: datetime) -> dict:
+        """What has actually been spent since a moment, in bids and tokens."""
+        row = self._db.execute(
+            """
+            SELECT COUNT(*) AS count, COALESCE(SUM(token), 0) AS tokens
+            FROM applied WHERE applied_at >= ?
+            """,
+            (since.isoformat(),),
+        ).fetchone()
+        return {"count": row["count"], "tokens": row["tokens"]}
